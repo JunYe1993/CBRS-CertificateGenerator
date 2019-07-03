@@ -1,0 +1,109 @@
+{
+     "ConfigFile": {
+          "config":  "opensslcbrs1.cnf",
+          "crlpath":  "etc/pki/CA"
+     },
+     "CA_Default":{
+          "keysize"      : "4096",
+          "validity"     : "365",
+          "country"      : "US",
+          "organization" : "Airspan Networks"
+     },
+     "Root_CA": {
+          "key"          : "rootkey.key",
+          "cert"         : "rootca.pem",
+          "organization" : "WInnForum",
+          "OU"           : "RSA ROOT CA9001",
+          "CN"           : "WInnForum RSA Root CA"
+     },
+     "SAS_CA": {
+          "key"  : "saskey.key",
+          "csr"  : "sascsr.csr",
+          "cert" : "sasca.pem",
+          "OU"   : "RSA SAS Provider CA9001",
+          "CN"   : "WInnForum RSA SAS Provider CA"
+     },
+     "CBSD_CA": {
+          "key"  : "cbsdkey.key",
+          "csr"  : "cbsdcsr.csr",
+          "cert" : "cbsdca.pem",
+          "OU"   : "RSA cbsd Mfr CA9001",
+          "CN"   : "WInnForum RSA CBSD Mfr CA"
+     },
+     "DP_CA": {
+          "key"  : "dpkey.key",
+          "csr"  : "dpcsr.csr",
+          "cert" : "dpca.pem",
+          "OU"   : "RSA Domain Proxy CA9001",
+          "CN"   : "WInnForum RSA Domain Proxy CA"
+     },
+     "SAS_Unknown_CA": {
+          "key"  : "key.key",
+          "csr"  : "csr.csr",
+          "cert" : "ca.pem",
+          "OU"   : "RSA SAS Provider CA UNKNOWN",
+          "CN"   : "WInnForum RSA SAS Provider CA"
+     },
+     "CPI_CA": {
+          "key"          : "cpikey.key",
+          "csr"          : "cpicsr.csr",
+          "cert"         : "cpica.pem",
+          "organization" : "Airspan Neto works",
+          "OU"           : "RSA Professional Installer CA9001",
+          "CN"           : "WInnForum RSA Professional Installer CA"
+     },
+     "CertificateDefault":{
+          "keysize"      : "2048",
+          "validity"     : "180",
+          "country"      : "US",
+          "organization" : "Airspan Networks",
+          "OU"           : "WInnForum SAS Provider Certificate"
+     },
+     "Harness_Certificate": {
+          "key"          : "harnesskey.key",
+          "csr"          : "harnesscsr.csr",
+          "cert"         : "harnesscert.pem",
+          "organization" : "Test Lab for FCC PART 96",
+          "CN"           : "mocksas.testlab.winnf.github.com"
+     },
+     "Harness_Unknown_Certificate": {
+          "key"  : "harnessunknownkey.key",
+          "csr"  : "harnessunknowncsr.csr",
+          "cert" : "harnessunknowncert.pem",
+          "CN"   : "sasunknownca.testlab.winnf.github.com"
+     },
+     "Harness_Expire_Certificate": {
+          "key"      : "harnessexpirekey.key",
+          "csr"      : "harnessexpirecsr.csr",
+          "cert"     : "harnessexpirecert.pem",
+          "validity" : "1",
+          "CN"       : "expiredsascert.testlab.winnf.github.com"
+     },
+     "Harness_Revoke_Certificate": {
+          "key"  : "harnessrevokekey.key",
+          "csr"  : "harnessrevokecsr.csr",
+          "cert" : "harnessrevokecert.pem",
+          "CN"   : "sascertwithcrl.testlab.winnf.github.com"
+     },
+     "Harness_Broken_Certificate": {
+          "key"  : "harnesskey.key",
+          "cert" : "harnessbrokencert.pem"
+     },
+     "CPI_certificate": {
+          "key"  : "cpicertkey.key",
+          "csr"  : "cpicertcsr.csr",
+          "cert" : "cpicertca.pem",
+          "OU"   : "WInnForum Installer Certificate",
+          "CN"   : "cpi9001"
+     },
+     "CRL": {
+          "emptycrl"  : "emptycrl.crl",
+          "servercrl" : "crlserver.crl"
+     },
+     "UUT_certificate": {
+          "key"  : "uutkey.key",
+          "csr"  : "uutcsr.csr",
+          "cert" : "uutcert.pem",
+          "OU"   : "WInnForum CBSD Certificate"
+     }
+}
