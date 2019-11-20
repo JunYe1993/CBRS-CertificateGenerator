@@ -6,4 +6,3 @@
      執行
           1. 若客戶有將給予憑證相關檔案，請把檔案放入 customerfile
           2. 執行 controllers/CertificateGenerater.py
-

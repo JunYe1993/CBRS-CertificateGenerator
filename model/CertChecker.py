@@ -3,6 +3,7 @@ import sys, os
 import re
 import json
 import subprocess
+import glob 
 
 class Checker(object):
 
@@ -30,6 +31,7 @@ class Checker(object):
      
      def findConfig(self):
           homepath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+          os.chdir(str(homepath))
           with open(str(homepath)+'\\config\\cert.json', 'r') as json_file:  
                data = json.load(json_file)
           if os.path.isfile(str(homepath) + '/config/' + data['ConfigFile']['config']): 
@@ -52,6 +54,8 @@ class Checker(object):
 
      def checkCustomerCertfile(self):
           print(u'請輸入檔名( XXX.csr / XXX.key )')
+          for name in glob.glob('customerfile/*'):
+               print name
           filename = self.userTypeIn()
           if re.search(r'.key$', filename, 0):
                self.certfile = filename
@@ -69,7 +73,4 @@ class Checker(object):
           self.fccid = self.userTypeIn()
           print(u'請輸入 UUT Serial Number')
           self.sn = self.userTypeIn()
-          
-
      
-
