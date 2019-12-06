@@ -3,7 +3,7 @@ import sys, os
 import subprocess
 import json
 import re
-from model.CertChecker import Checker
+from .CertChecker import Checker
 
 class Generater(object):
      
@@ -21,13 +21,13 @@ class Generater(object):
           
           print('adding path...')
           print(str(self.homepath))
-          subprocess.call('mkdir '+str(self.homepath)+'\\certificates\\ManagedCerts\\UUT', shell = True)
-          subprocess.call('mkdir '+str(self.homepath)+'\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS1', shell = True)
-          subprocess.call('mkdir '+str(self.homepath)+'\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS2', shell = True)
-          subprocess.call('mkdir '+str(self.homepath)+'\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS3', shell = True)
-          subprocess.call('mkdir '+str(self.homepath)+'\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS4', shell = True)
-          subprocess.call('mkdir '+str(self.homepath)+'\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS5', shell = True)
-          subprocess.call('mkdir '+str(self.homepath)+'\\certificates\\OringinalCerts\\etc\\pki\\CA', shell = True)
+          subprocess.call('mkdir '+str(self.homepath) + '\\certificates\\ManagedCerts\\UUT', shell = True)
+          subprocess.call('mkdir '+str(self.homepath) + '\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS1', shell = True)
+          subprocess.call('mkdir '+str(self.homepath) + '\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS2', shell = True)
+          subprocess.call('mkdir '+str(self.homepath) + '\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS3', shell = True)
+          subprocess.call('mkdir '+str(self.homepath) + '\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS4', shell = True)
+          subprocess.call('mkdir '+str(self.homepath) + '\\certificates\\ManagedCerts\\SAS-Test-Harnss\\SCS5', shell = True)
+          subprocess.call('mkdir '+str(self.homepath) + '\\certificates\\OringinalCerts\\etc\\pki\\CA', shell = True)
 
      def checkFiles(self):
 
@@ -143,12 +143,13 @@ class Generater(object):
 
 
           #### the unified PKI chain PEM file containing sub-CA
-
-          self.createCertChain(data['Harness_Certificate']['cert'], data['SAS_CA']['cert'])
-          self.createCertChain(data['Harness_Unknown_Certificate']['cert'], data['SAS_CA']['cert'])
-          self.createCertChain(data['Harness_Expire_Certificate']['cert'], data['SAS_CA']['cert'])
-          self.createCertChain(data['Harness_Revoke_Certificate']['cert'], data['SAS_CA']['cert'])
-          self.createCertChain(data['Harness_Broken_Certificate']['cert'], data['SAS_CA']['cert'])
+          
+          targetpath = str(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) + "\\certificates\\ManagedCerts\\SAS-Test-Harnss\\"
+          self.createCertChain(targetpath + "\\SCS1\\" + data['Harness_Certificate']['cert'], data['Harness_Certificate']['cert'], data['SAS_CA']['cert'])
+          self.createCertChain(targetpath + "\\SCS4\\" + data['Harness_Certificate']['cert'], data['Harness_Unknown_Certificate']['cert'], data['SAS_CA']['cert'])
+          self.createCertChain(targetpath + "\\SCS3\\" + data['Harness_Certificate']['cert'], data['Harness_Expire_Certificate']['cert'], data['SAS_CA']['cert'])
+          self.createCertChain(targetpath + "\\SCS2\\" + data['Harness_Certificate']['cert'], data['Harness_Revoke_Certificate']['cert'], data['SAS_CA']['cert'])
+          self.createCertChain(targetpath + "\\SCS5\\" + data['Harness_Certificate']['cert'], data['Harness_Broken_Certificate']['cert'], data['SAS_CA']['cert'])
 
 
           #### CPI Certificate
@@ -157,7 +158,7 @@ class Generater(object):
           subprocess.call(['openssl','genrsa','-out', data['CPI_certificate']['key'], data['CertificateDefault']['keysize']], shell = True)
           subprocess.call(['openssl','req','-new','-key', data['CPI_certificate']['key'],'-out', data['CPI_certificate']['csr'],'-subj', certinformation,'-config', config], shell = True)
           subprocess.call(['openssl','x509','-req','-in', data['CPI_certificate']['csr'],'-CA', data['CPI_CA']['cert'],'-CAkey', data['CPI_CA']['key'],'-CAcreateserial','-out', data['CPI_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cpi_cert'], shell = True)
-          self.createCertChain(data['CPI_certificate']['cert'], data['CPI_certificate']['key'])
+          self.createCertChain(targetpath + data['CPI_certificate']['cert'], data['CPI_certificate']['cert'], data['CPI_certificate']['key'])
 
           #### Certificate Revocation List (CRL file)
 
@@ -175,17 +176,11 @@ class Generater(object):
           targetpath = ' '+str(self.homepath)+'\\certificates\\ManagedCerts\\SAS-Test-Harnss\\'
           subprocess.call('COPY '+curpath+ data['Root_CA']['cert'] + targetpath + data['Root_CA']['cert'], shell = True)
           subprocess.call('COPY '+curpath+ data['CRL']['servercrl'] + targetpath + data['CRL']['servercrl'], shell = True)
-          subprocess.call('COPY '+curpath+ data['CPI_certificate']['cert'] + targetpath + data['CPI_certificate']['cert'], shell = True)
           subprocess.call('COPY '+curpath+ data['Harness_Certificate']['key']  +targetpath+ 'SCS1\\' + data['Harness_Certificate']['key'],   shell = True)
-          subprocess.call('COPY '+curpath+ data['Harness_Certificate']['cert'] +targetpath+ 'SCS1\\' + data['Harness_Certificate']['cert'],  shell = True)
           subprocess.call('COPY '+curpath+ data['Harness_Unknown_Certificate']['key']  +targetpath+ 'SCS4\\' + data['Harness_Certificate']['key'],   shell = True)
-          subprocess.call('COPY '+curpath+ data['Harness_Unknown_Certificate']['cert'] +targetpath+ 'SCS4\\' + data['Harness_Certificate']['cert'],  shell = True)
           subprocess.call('COPY '+curpath+ data['Harness_Expire_Certificate']['key']   +targetpath+ 'SCS3\\' + data['Harness_Certificate']['key'],   shell = True)
-          subprocess.call('COPY '+curpath+ data['Harness_Expire_Certificate']['cert']  +targetpath+ 'SCS3\\' + data['Harness_Certificate']['cert'],  shell = True)
           subprocess.call('COPY '+curpath+ data['Harness_Revoke_Certificate']['key']   +targetpath+ 'SCS2\\' + data['Harness_Certificate']['key'],   shell = True)
-          subprocess.call('COPY '+curpath+ data['Harness_Revoke_Certificate']['cert']  +targetpath+ 'SCS2\\' + data['Harness_Certificate']['cert'],  shell = True)
           subprocess.call('COPY '+curpath+ data['Harness_Broken_Certificate']['key']   +targetpath+ 'SCS5\\' + data['Harness_Certificate']['key'],   shell = True)
-          subprocess.call('COPY '+curpath+ data['Harness_Broken_Certificate']['cert']  +targetpath+ 'SCS5\\' + data['Harness_Certificate']['cert'],  shell = True)
 
           os.chdir(str(self.homepath))
      
@@ -202,14 +197,19 @@ class Generater(object):
           with open(brokefile , "w") as f:
                f.write(file_data)
 
-     def createCertChain(self, cert, ca):
+     def createCertChain(self, filename, cert1, cert2):
           file_data = ""
-          with open(ca, "r") as f:
+          with open(cert1 , "r") as f:
+               for line in f:
+                    file_data += line
+
+          with open(cert2, "r") as f:
                for line in f:
                     file_data += line
           
-          with open(cert , "a") as f:
-               f.write(file_data)
+          with open(filename, "w+") as f:
+               for line in file_data:
+                    f.writelines(line)
 
      def createCRLprefile(self, path):
           file = open(path + "/index.txt", "w")
@@ -236,15 +236,47 @@ class Generater(object):
           elif re.search(r'.csr$', self.certfile, 0):
                subprocess.call(['openssl','x509','-req','-in', customerfilepath+self.certfile,'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
 
-          self.createCertChain(data['UUT_certificate']['cert'], data['CBSD_CA']['cert'])  
-
+          
           curpath = str(self.homepath)+'\\certificates\\OringinalCerts\\'
-          targetpath = ' '+str(self.homepath)+'\\certificates\\ManagedCerts\\UUT\\'
-          subprocess.call('COPY '+curpath+ data['Root_CA']['cert'] + targetpath + data['Root_CA']['cert'], shell = True)
-          subprocess.call('COPY '+curpath+ data['CBSD_CA']['cert']  +targetpath + data['CBSD_CA']['cert'],   shell = True)
-          subprocess.call('COPY '+curpath+ data['UUT_certificate']['cert']  +targetpath + data['UUT_certificate']['cert'],   shell = True)
+          targetpath = str(self.homepath)+'\\certificates\\ManagedCerts\\UUT\\'
+
+          self.createCertChain(targetpath + data['UUT_certificate']['cert'], data['UUT_certificate']['cert'], data['CBSD_CA']['cert'])
+
+          subprocess.call('COPY '+curpath+ data['Root_CA']['cert'] + ' ' + targetpath + data['Root_CA']['cert'], shell = True)
+          subprocess.call('COPY '+curpath+ data['CBSD_CA']['cert'] + ' ' + targetpath + data['CBSD_CA']['cert'], shell = True)
+
           subprocess.call('cls', shell = True)
 
+     def createUUTcerts_v2(self):
      
-     
+          customerfilepath = str(self.homepath)+'\\customerfile\\'
+          with open(str(self.homepath)+'\\config\\cert.json', 'r') as json_file:  
+               data = json.load(json_file)
+          config = str(self.homepath)+'\\config\\'+data['ConfigFile']['config']
+          os.chdir(str(self.homepath)+'\\certificates\\OringinalCerts')
+          if self.certfile == '':
+               certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['UUT_certificate']['OU']+'/CN='+self.fccid+':'+self.sn
+               subprocess.call(['openssl','genrsa','-out', data['UUT_certificate']['key'], data['CertificateDefault']['keysize']])
+               subprocess.call(['openssl','req','-new','-key', data['UUT_certificate']['key'],'-out', data['UUT_certificate']['csr'],'-subj', certinformation,'-config', config])
+               subprocess.call(['openssl','x509','-req','-in', data['UUT_certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+          elif re.search(r'.key$', self.certfile, 0):
+               certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['UUT_certificate']['OU']+'/CN='+self.fccid+':'+self.sn
+               subprocess.call(['openssl','req','-new','-key', customerfilepath+self.certfile,'-out', data['UUT_certificate']['csr'],'-subj', certinformation,'-config', config])
+               subprocess.call(['openssl','x509','-req','-in', data['UUT_certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+          elif re.search(r'.csr$', self.certfile, 0):
+               subprocess.call(['openssl','x509','-req','-in', customerfilepath+self.certfile,'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+
+          
+          curpath = str(self.homepath)+'\\certificates\\OringinalCerts\\'
+          targetpath = str(self.homepath)+'\\certificates\\ManagedCerts\\UUT\\'
+
+          self.createCertChain(targetpath + data['UUT_certificate']['cert'], data['UUT_certificate']['cert'], data['UUT_certificate']['key'])
+          self.createCertChain(targetpath + "PKI.pem", curpath + data['CBSD_CA']['cert'], curpath + data['Root_CA']['cert'])
+          self.createCertChain(targetpath + "CPI.pem", curpath + data['CPI_certificate']['cert'], curpath + data['CPI_certificate']['key'])
+
+          subprocess.call('COPY '+ curpath + data['Root_CA']['cert'] + ' ' + targetpath + data['Root_CA']['cert'], shell = True)
+          subprocess.call('COPY '+ curpath + data['SAS_CA']['cert'] + ' ' + targetpath + data['CBSD_CA']['cert'], shell = True)
+
+          # subprocess.call('cls', shell = True)
+
 
