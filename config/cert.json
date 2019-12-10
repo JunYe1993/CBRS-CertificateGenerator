@@ -31,9 +31,9 @@
           "CN"   : "WInnForum RSA CBSD Mfr CA"
      },
      "DP_CA": {
-          "key"  : "dpkey.key",
-          "csr"  : "dpcsr.csr",
-          "cert" : "dpca.pem",
+          "key"  : "dpcakey.key",
+          "csr"  : "dpcacsr.csr",
+          "cert" : "dpcacert.pem",
           "OU"   : "RSA Domain Proxy CA9001",
           "CN"   : "WInnForum RSA Domain Proxy CA"
      },
@@ -104,6 +104,12 @@
           "key"  : "uutkey.key",
           "csr"  : "uutcsr.csr",
           "cert" : "uutcert.pem",
+          "OU"   : "WInnForum CBSD Certificate"
+     },
+     "DP_certificate": {
+          "key"  : "dpkey.key",
+          "csr"  : "dpcsr.csr",
+          "cert" : "dpcert.pem",
           "OU"   : "WInnForum CBSD Certificate"
      }
 }

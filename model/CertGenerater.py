@@ -259,12 +259,22 @@ class Generater(object):
                subprocess.call(['openssl','genrsa','-out', data['UUT_certificate']['key'], data['CertificateDefault']['keysize']])
                subprocess.call(['openssl','req','-new','-key', data['UUT_certificate']['key'],'-out', data['UUT_certificate']['csr'],'-subj', certinformation,'-config', config])
                subprocess.call(['openssl','x509','-req','-in', data['UUT_certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+
+               subprocess.call(['openssl','genrsa','-out', data['DP_certificate']['key'], data['CertificateDefault']['keysize']])
+               subprocess.call(['openssl','req','-new','-key', data['DP_certificate']['key'],'-out', data['DP_certificate']['csr'],'-subj', certinformation,'-config', config])
+               subprocess.call(['openssl','x509','-req','-in', data['DP_certificate']['csr'],'-CA', data['DP_CA']['cert'],'-CAkey', data['DP_CA']['key'],'-CAcreateserial','-out', data['DP_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'domain_proxy_cert'])
+          
           elif re.search(r'.key$', self.certfile, 0):
                certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['UUT_certificate']['OU']+'/CN='+self.fccid+':'+self.sn
                subprocess.call(['openssl','req','-new','-key', customerfilepath+self.certfile,'-out', data['UUT_certificate']['csr'],'-subj', certinformation,'-config', config])
                subprocess.call(['openssl','x509','-req','-in', data['UUT_certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+          
+               subprocess.call(['openssl','req','-new','-key', customerfilepath+self.certfile,'-out', data['DP_certificate']['csr'],'-subj', certinformation,'-config', config])
+               subprocess.call(['openssl','x509','-req','-in', data['DP_certificate']['csr'],'-CA', data['DP_CA']['cert'],'-CAkey', data['DP_CA']['key'],'-CAcreateserial','-out', data['DP_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'domain_proxy_cert'])
           elif re.search(r'.csr$', self.certfile, 0):
                subprocess.call(['openssl','x509','-req','-in', customerfilepath+self.certfile,'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+
+               subprocess.call(['openssl','x509','-req','-in', customerfilepath+self.certfile,'-CA', data['DP_CA']['cert'],'-CAkey', data['DP_CA']['key'],'-CAcreateserial','-out', data['DP_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'domain_proxy_cert'])
 
           
           curpath = str(self.homepath)+'\\certificates\\OringinalCerts\\'
@@ -274,9 +284,12 @@ class Generater(object):
           self.createCertChain(targetpath + "PKI.pem", curpath + data['CBSD_CA']['cert'], curpath + data['Root_CA']['cert'])
           self.createCertChain(targetpath + "CPI.pem", curpath + data['CPI_certificate']['cert'], curpath + data['CPI_certificate']['key'])
 
-          subprocess.call('COPY '+ curpath + data['Root_CA']['cert'] + ' ' + targetpath + data['Root_CA']['cert'], shell = True)
-          subprocess.call('COPY '+ curpath + data['SAS_CA']['cert'] + ' ' + targetpath + data['CBSD_CA']['cert'], shell = True)
+          self.createCertChain(targetpath + data['DP_certificate']['cert'], data['DP_certificate']['cert'], data['DP_certificate']['key'])
+          self.createCertChain(targetpath + "DP_PKI.pem", curpath + data['DP_CA']['cert'], curpath + data['Root_CA']['cert'])
 
+          subprocess.call('COPY '+ curpath + data['Root_CA']['cert'] + ' ' + targetpath + data['Root_CA']['cert'], shell = True)
+          subprocess.call('COPY '+ curpath + data['CBSD_CA']['cert'] + ' ' + targetpath + data['CBSD_CA']['cert'], shell = True)
+          subprocess.call('COPY '+ curpath + data['DP_CA']['cert'] + ' ' + targetpath + data['DP_CA']['cert'], shell = True)
           # subprocess.call('cls', shell = True)
 
 

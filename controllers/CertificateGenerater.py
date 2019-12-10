@@ -16,7 +16,7 @@ while CustomerParameters.findConfig():
           if myCert.checkFiles():
                myCert.createFolder()
                myCert.createCerts()
-               myCert.createUUTcerts()
+               myCert.createUUTcerts_v2()
 
      elif userchoice == '2':
           CustomerParameters.checkCertificateMap()
