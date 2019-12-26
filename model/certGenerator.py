@@ -3,6 +3,8 @@ import collections
 import subprocess
 import json
 import re
+os.chdir(os.path.abspath(os.path.dirname(__file__)))
+from logger import logger
 
 class certStructure(object):
 
@@ -20,41 +22,126 @@ class certificateAuthorityStructure(certStructure):
           if self.certData['customerType'] == '':
                self.certData['customerType'] = 'UUT'
 
+          self.logger = logger("CertificateAuthorityStructure's Log >>")
+
      def setCommand(self, opensslCmd):
           subprocess.call(opensslCmd, shell = True)
 
+     # Tier 1
+     
      def setKey(self, config):
-          opensslCmd = self.getOpensslKeyCmd(config)
-          self.setCommand(opensslCmd)
+          if self.isKeyConfigValid(config):
+               opensslCmd = self.getOpensslKeyCmd(config)
+               self.setCommand(opensslCmd)
      
      def setRootCert(self, config):
-          certImformation = self.getCertInformation(config)
-          opensslCmd = self.getOpensslRootCertCmd(config, certImformation)
-          self.setCommand(opensslCmd)
+          if self.isRootCertConfigValid(config) and self.isCertInformationConfigValid(config):
+               certImformation = self.getCertInformation(config)
+               opensslCmd = self.getOpensslRootCertCmd(config, certImformation)
+               self.setCommand(opensslCmd)
 
      def setCsr(self, config):
-          certImformation = self.getCertInformation(config)
-          opensslCmd = self.getOpensslCsrCmd(config, certImformation)
-          self.setCommand(opensslCmd)
+          if self.isCsrConfigValid(config) and self.isCertInformationConfigValid(config):
+               certImformation = self.getCertInformation(config)
+               opensslCmd = self.getOpensslCsrCmd(config, certImformation)
+               self.setCommand(opensslCmd)
 
      def setCert(self, config):
-          opensslCmd = self.getOpensslCertCmd(config)
-          self.setCommand(opensslCmd)
+          if self.isCertConfigValid(config):
+               opensslCmd = self.getOpensslCertCmd(config)
+               self.setCommand(opensslCmd)
+
+     # Tier 2
+
+     def isKeyConfigValid(self, config):
+          keyList = ['key', 'keysize']
+          return self.isConfigValid(config, keyList)
      
      def getOpensslKeyCmd(self, config):
-          return ['openssl','genrsa','-out', config['key'], config['keysize']]
+          return ['openssl','genrsa','-out', config['key'], config['keysize']]     
+
+     
+     def isCertInformationConfigValid(self, config):
+          Valid = True
+          keyList = ['countryName', 'organizationName', 'organizationUnitName', 'commonName']
+          if self.isConfigValid(config, keyList):
+               if len(config['countryName']) != 2:
+                    self.logger.setScreenPrint('Country name must be two characters')
+                    Valid = False
+          else:
+               Valid = False
+          return Valid
+
+     def getCertInformation(self, config):
+          return '/C='+config['countryName']+'/O='+config['organizationName']+'/OU='+config['organizationUnitName']+'/CN='+config['commonName'] 
+     
+     
+     def isRootCertConfigValid(self, config):
+          keyList = ['key', 'cert', 'validity', 'configFile']
+          if not self.isConfigValid(config, keyList): return False
+          fileNameList = [config['key']]
+          return self.isPrefileExist(fileNameList)
      
      def getOpensslRootCertCmd(self, config, certImformation):
           return ['openssl','req','-new','-x509','-key', config['key'],'-out', config['cert'], '-days', config['validity'],'-subj', certImformation,'-config', config['configFile']]
+    
+
+     def isCsrConfigValid(self, config):
+          keyList = ['key', 'csr', 'configFile']
+          if not self.isConfigValid(config, keyList): return False
+          fileNameList = [config['key']]
+          return self.isPrefileExist(fileNameList)
 
      def getOpensslCsrCmd(self, config, certImformation):
           return ['openssl','req','-new','-key', config['key'],'-out', config['csr'],'-subj', certImformation, '-config', config['configFile']]
 
-     def getOpensslCertCmd(self, config):
-          return ['openssl', 'x509', '-req', '-in', config['csr'], '-CA', config['parentCert'], '-CAkey', config['parentkey'], '-CAcreateserial','-out', config['cert'],'-days', config['validity'], '-sha384','-extfile', config['configFile'], '-extensions', config['extensions']]
+
+     def isCertConfigValid(self, config):
+          keyList = ['csr', 'parentCert', 'parentKey', 'cert', 'validity', 'extensions']
+          if not self.isConfigValid(config, keyList): return False
+          fileNameList = [config['csr'], config['parentCert'], config['parentKey']]
+          return self.isPrefileExist(fileNameList)
      
-     def getCertInformation(self, config):
-          return '/C='+config['countryName']+'/O='+config['organizationName']+'/OU='+config['organizationUnitName']+'/CN='+config['commonName']
+     def getOpensslCertCmd(self, config):
+          return ['openssl','x509','-req','-in', config['csr'], '-CA', config['parentCert'], '-CAkey', config['parentKey'], '-CAcreateserial','-out', config['cert'],'-days', config['validity'], '-sha384','-extfile', config['configFile'], '-extensions', config['extensions']]
+     
+
+     # Tier 3     
+     
+     def isUnsignedInt(self, val):
+          try: 
+               if int(val) > 0:
+                    return True
+               else:
+                    return False
+          except ValueError:
+               return False
+
+     def isConfigValid(self, config, keyList):
+          Valid = True
+          data = collections.defaultdict(str)
+          data.update(config)
+          for key in keyList:
+               if data[key] == '':
+                    self.logger.setScreenPrint(key + ': not found')
+                    Valid = False
+                    break
+               if key == 'validity':
+                    if not self.isUnsignedInt(data[key]):
+                         self.logger.setScreenPrint('validity not right : ' + data[key])
+                         Valid = False
+                         break
+          return Valid
+
+     def isPrefileExist(self, fileNameList):
+          Exist = True
+          for key in fileNameList:
+               if not os.path.isfile(key):
+                    self.logger.setScreenPrint(key + ': File not exist')
+                    Exist = False
+                    break
+          return Exist
+
 
 class certGeneratorModel(certStructure):
 

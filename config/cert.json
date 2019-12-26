@@ -21,7 +21,8 @@
           "csr"  : "sascsr.csr",
           "cert" : "sasca.pem",
           "OU"   : "RSA SAS Provider CA9001",
-          "CN"   : "WInnForum RSA SAS Provider CA"
+          "CN"   : "WInnForum RSA SAS Provider CA",
+          "extensions" : "cbrs_sas_ca"
      },
      "CBSD_CA": {
           "key"  : "cbsdkey.key",

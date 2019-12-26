@@ -22,7 +22,7 @@ while CustomerParameters.findConfig():
           CustomerParameters.checkCertificateMap()
           myCert = Generater(CustomerParameters.certfile, CustomerParameters.fccid, CustomerParameters.sn)
           if myCert.checkCustomerFiles():
-               myCert.createUUTcerts()
+               myCert.createUUTcerts_v2()
 
           
 
