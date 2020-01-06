@@ -12,16 +12,10 @@ class certStructure(object):
           self.certData = collections.defaultdict(str)
           self.certData.update(data)
 
-          if self.certData['outputDirName'] == '':
-               self.certData['outputDirName'] = 'certificates'
-
 class certificateAuthorityStructure(certStructure):
 
      def __init__(self, data = {}):
           super(certificateAuthorityStructure, self).__init__(data)
-          if self.certData['customerType'] == '':
-               self.certData['customerType'] = 'UUT'
-
           self.logger = logger("CertificateAuthorityStructure's Log >>")
 
      def setCommand(self, opensslCmd):
@@ -29,27 +23,46 @@ class certificateAuthorityStructure(certStructure):
 
      # Tier 1
      
-     def setKey(self, config):
+     def setKey(self, config = {}):
+          if not config:
+               config = self.certData
           if self.isKeyConfigValid(config):
                opensslCmd = self.getOpensslKeyCmd(config)
                self.setCommand(opensslCmd)
      
-     def setRootCert(self, config):
+     def setRootCert(self, config = {}):
+          if not config:
+               config = self.certData
           if self.isRootCertConfigValid(config) and self.isCertInformationConfigValid(config):
                certImformation = self.getCertInformation(config)
                opensslCmd = self.getOpensslRootCertCmd(config, certImformation)
                self.setCommand(opensslCmd)
 
-     def setCsr(self, config):
+     def setCsr(self, config = {}):
+          if not config:
+               config = self.certData
           if self.isCsrConfigValid(config) and self.isCertInformationConfigValid(config):
                certImformation = self.getCertInformation(config)
                opensslCmd = self.getOpensslCsrCmd(config, certImformation)
                self.setCommand(opensslCmd)
 
-     def setCert(self, config):
+     def setCert(self, config = {}):
+          if not config:
+               config = self.certData
           if self.isCertConfigValid(config):
                opensslCmd = self.getOpensslCertCmd(config)
                self.setCommand(opensslCmd)
+
+     def initCRL(self, config = {}):
+          config.update(self.certData)
+          if self.isInitCRLConfigValid(config):
+               self.setCommand(self.getOpensslInitCRLCmd(config))
+
+     def revokeCertificate(self, config = {}):
+          config.update(self.certData)
+          if self.isRevokeConfigValid(config):
+               self.setCommand(self.getOpensslRevokeCmd(config))
+               self.setCommand(self.getOpensslUpdatedCRLCmd(config))
 
      # Tier 2
 
@@ -106,6 +119,28 @@ class certificateAuthorityStructure(certStructure):
           return ['openssl','x509','-req','-in', config['csr'], '-CA', config['parentCert'], '-CAkey', config['parentKey'], '-CAcreateserial','-out', config['cert'],'-days', config['validity'], '-sha384','-extfile', config['configFile'], '-extensions', config['extensions']]
      
 
+     def isInitCRLConfigValid(self, config):
+          keyList = ['configFile', 'key', 'cert', 'emptycrl']
+          if not self.isConfigValid(config, keyList): return False
+          fileNameList = [config['configFile'], config['key'], config['cert']]
+          return self.isPrefileExist(fileNameList)
+
+     def getOpensslInitCRLCmd(self, config):
+          return ['openssl','ca','-config', config['configFile'],'-gencrl','-keyfile', config['key'],'-cert', config['cert'],'-out', config['emptycrl']]
+
+     def isRevokeConfigValid(self, config):
+          keyList = ['configFile', 'key', 'cert', 'revokeCert', 'servercrl']
+          if not self.isConfigValid(config, keyList): return False
+          fileNameList = [config['configFile'], config['key'], config['cert'], config['revokeCert']]
+          return self.isPrefileExist(fileNameList)
+
+     def getOpensslRevokeCmd(self, config):
+          return ['openssl','ca','-revoke', config['revokeCert'],'-config', config['configFile'],'-keyfile', config['key'],'-cert', config['cert']]
+
+     def getOpensslUpdatedCRLCmd(self, config):
+          return ['openssl','ca','-config', config['configFile'],'-gencrl','-keyfile', config['key'],'-cert', config['cert'],'-out', config['servercrl']]
+
+
      # Tier 3     
      
      def isUnsignedInt(self, val):
@@ -142,11 +177,12 @@ class certificateAuthorityStructure(certStructure):
                     break
           return Exist
 
-
 class certGeneratorModel(certStructure):
 
      def __init__(self, data = {}):
           super(certGeneratorModel, self).__init__(data)
+          if self.certData['outputDirName'] == '' : self.certData['outputDirName'] = 'certificates'
+          if self.certData['customerType'] == ''  : self.certData['customerType'] = 'CBSD'
           self.rootPath = str(os.path.dirname(os.path.dirname(__file__))) + '\\' + self.certData['outputDirName']
           self.rawCertPath = self.rootPath + '\\OriginalCerts'
           self.outputUUTCertPath = self.rootPath + '\\ManagedCerts\\UUT'
@@ -169,7 +205,7 @@ class certGeneratorModel(certStructure):
           subprocess.call('mkdir ' + str(self.outputHarnessCertPath) + '\\SCS5', shell = True)
 
           # to work with config/opensslcbrs1.cnf
-          subprocess.call('mkdir '+str(self.rawCertPath) + '\\etc\\pki\\CA', shell = True)
+          subprocess.call('mkdir ' + str(self.rawCertPath) + '\\etc\\pki\\CA', shell = True)
 
      def setConfig(self):
           configPath = str(os.path.dirname(os.path.dirname(__file__))) + '\\config'
@@ -177,111 +213,117 @@ class certGeneratorModel(certStructure):
                self.certNameConfig = json.load(json_file)
           self.configFile = configPath + '\\' + self.certNameConfig['ConfigFile']['config']
 
-     def setCertificateAuthority(self):
+     def setToRawCertPath(self):
+          os.chdir(self.rawCertPath)
+
+     def setRootCA(self):
+          self.setToRawCertPath()
           Root_CA_config = self.getCertificateAuthorityConfig("Root")
           self.Root_CA = certificateAuthorityStructure(Root_CA_config)
+          self.Root_CA.setKey()
+          self.Root_CA.setRootCert()
 
-     def getCertificateAuthorityConfig(self, name):
+     def setCertificateAuthority(self):
+          self.setToRawCertPath()
+          self.SAS_CA = self.getCertificateAuthority("SAS", "Root")
+          self.unknownSAS_CA = self.getCertificateAuthority("SAS_Unknown", "Root")
+          self.CBSD_CA = self.getCertificateAuthority("CBSD", "Root")
+          self.DP_CA = self.getCertificateAuthority("DP", "Root")
+          self.CPI_CA = self.getCertificateAuthority("CPI", "Root")
+
+     def setCertificate(self):
+          self.setToRawCertPath()
+          self.SAS_harness_Cert = self.getCertificate("Harness", "SAS")
+          self.SAS_harness_expired_Cert = self.getCertificate("Harness_Expired", "SAS")
+          self.SAS_harness_unknown_Cert = self.getCertificate("Harness_Unknown", "SAS")
+          self.SAS_harness_revoked_Cert = self.getCertificate("Harness_Revoked", "SAS")
+          self.revokeCerticate(self.SAS_harness_revoked_Cert, self.SAS_CA)
+
+          self.CPI_Cert = self.getCertificate("CPI", "CPI")
+          self.CBSD_Cert = self.getCertificate("CBSD", "CBSD")
+          self.DP_Cert = self.getCertificate("DP", "DP")
+          
+     def revokeCerticate(self, revokeCert = certificateAuthorityStructure(), revokeCA = certificateAuthorityStructure()):
+          self.setCRLprefile(str(self.rawCertPath) + '\\etc\\pki\\CA')
+          config = self.getCRLConfig({'revokeCert': revokeCA.certData['cert']}) 
+          revokeCA.initCRL(config)
+          revokeCA.revokeCertificate(config)
+
+
+
+
+
+
+
+     def getCertificateAuthority(self, name, parentCA):
+          os.chdir(self.rawCertPath)
+          CA_config = self.getCertificateAuthorityConfig(name, parentCA)
+          CA_structure = certificateAuthorityStructure(CA_config)
+          return self.generateCertificate(CA_structure)
+
+     def getCertificate(self, name, parentCA):
+          os.chdir(self.rawCertPath)
+          Cert_config = self.getCertificateConfig(name, parentCA)
+          Cert_structure = certificateAuthorityStructure(Cert_config)
+          return self.generateCertificate(Cert_structure)
+
+     def getCertificateAuthorityConfig(self, name, parentCA = ""):
           config = collections.defaultdict(str)
+          config.update({'configFile': self.configFile})
           config.update(self.certNameConfig["CA_Default"])
           config.update(self.certNameConfig[name + "_CA"])
+          if name != "Root":
+               config['parentCert'] = self.certNameConfig[parentCA + "_CA"]['cert']
+               config['parentKey'] = self.certNameConfig[parentCA + "_CA"]['key']
           return config
 
+     def getCertificateConfig(self, name, parentCA):
+          config = collections.defaultdict(str)
+          config.update({'configFile': self.configFile})
+          config.update(self.certNameConfig["CertificateDefault"])
+          config.update(self.certNameConfig[name + "_Certificate"])
+          config['parentCert'] = self.certNameConfig[parentCA + "_CA"]['cert']
+          config['parentKey']  = self.certNameConfig[parentCA + "_CA"]['key']
 
+          # if there is uut type (cbsd or dp)
+          if name == self.certData['customerType']: config['theTypeOfUUT'] = True
 
+          return config
 
+     def generateCertificate(self, Cert = certificateAuthorityStructure()):
 
+          if Cert.certData['theTypeOfUUT'] == True:
+               CustomerFile = self.certData['customerFile']
+               noCustomerFile = ''
+               isFileKey = re.search(r'.key$', CustomerFile, 0)
+               isFileCsr = re.search(r'.csr$', CustomerFile, 0)
+               
+               
 
+               if CustomerFile == noCustomerFile:
+                    Cert.setKey()
+                    Cert.setCsr()
+                    Cert.setCert()
 
+               else:
+                    if isFileKey: 
+                         Cert.certData['key'] = CustomerFile
+                         Cert.setCsr()
+                         Cert.setCert()
 
+                    elif isFileCsr:
+                         Cert.certData['csr'] = CustomerFile
+                         Cert.setCert()
+          else :
+               Cert.setKey()
+               Cert.setCsr()
+               Cert.setCert()
 
+          return Cert
 
-     def setRoot(self, nameConfig, configFile):
-          certinformation = '/C='+nameConfig['CA_Default']['country']+'/O='+nameConfig['Root_CA']['organization']+'/OU='+nameConfig['Root_CA']['OU']+'/CN='+nameConfig['Root_CA']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['Root_CA']['key'], nameConfig['CA_Default']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-x509','-key', nameConfig['Root_CA']['key'],'-out', nameConfig['Root_CA']['cert'],'-days', nameConfig['CA_Default']['validity'],'-subj', certinformation,'-config', configFile], shell = True)
-
-     def setSAS_CertificateAuthority(self, nameConfig, configFile):
-          certinformation = '/C='+nameConfig['CA_Default']['country']+'/O='+nameConfig['CA_Default']['organization']+'/OU='+nameConfig['SAS_CA']['OU']+'/CN='+nameConfig['SAS_CA']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['SAS_CA']['key'], nameConfig['CA_Default']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', nameConfig['SAS_CA']['key'],'-out', nameConfig['SAS_CA']['csr'],'-subj', certinformation,'-config', configFile], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', nameConfig['SAS_CA']['csr'],'-CA', nameConfig['Root_CA']['cert'],'-CAkey', nameConfig['Root_CA']['key'],'-CAcreateserial','-out', nameConfig['SAS_CA']['cert'],'-days', nameConfig['CA_Default']['validity'],'-sha384','-extfile', configFile, '-extensions', 'cbrs_sas_ca'], shell = True)
-
-     def setCBSD_CertificateAuthority(self, nameConfig, configFile):
-          certinformation = '/C='+nameConfig['CA_Default']['country']+'/O='+nameConfig['CA_Default']['organization']+'/OU='+nameConfig['CBSD_CA']['OU']+'/CN='+nameConfig['CBSD_CA']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['CBSD_CA']['key'], nameConfig['CA_Default']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', nameConfig['CBSD_CA']['key'],'-out', nameConfig['CBSD_CA']['csr'],'-subj', certinformation,'-config', configFile], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', nameConfig['CBSD_CA']['csr'],'-CA', nameConfig['Root_CA']['cert'],'-CAkey', nameConfig['Root_CA']['key'],'-CAcreateserial','-out', nameConfig['CBSD_CA']['cert'],'-days', nameConfig['CA_Default']['validity'],'-sha384','-extfile', configFile, '-extensions', 'cbrs_cbsd_mfr_ca'], shell = True)
-
-     def setDomainProxy_CertificateAuthority(self, nameConfig, configFile):
-          certinformation = '/C='+nameConfig['CA_Default']['country']+'/O='+nameConfig['CA_Default']['organization']+'/OU='+nameConfig['DP_CA']['OU']+'/CN='+nameConfig['DP_CA']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['DP_CA']['key'], nameConfig['CA_Default']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', nameConfig['DP_CA']['key'],'-out', nameConfig['DP_CA']['csr'],'-subj', certinformation,'-config', configFile], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', nameConfig['DP_CA']['csr'],'-CA', nameConfig['Root_CA']['cert'],'-CAkey', nameConfig['Root_CA']['key'],'-CAcreateserial','-out', nameConfig['DP_CA']['cert'],'-days', nameConfig['CA_Default']['validity'],'-sha384','-extfile', configFile, '-extensions', 'cbrs_domain_proxy_ca'], shell = True)
-
-     def setUnknownSAS_CertificateAuthority(self, nameConfig, configFile):
-          certinformation = '/C='+nameConfig['CA_Default']['country']+'/O='+nameConfig['CA_Default']['organization']+'/OU='+nameConfig['SAS_Unknown_CA']['OU']+'/CN='+nameConfig['SAS_Unknown_CA']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['SAS_Unknown_CA']['key'], nameConfig['CA_Default']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', nameConfig['SAS_Unknown_CA']['key'],'-out', nameConfig['SAS_Unknown_CA']['csr'],'-subj', certinformation,'-config', configFile], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', nameConfig['SAS_Unknown_CA']['csr'],'-CA', nameConfig['Root_CA']['cert'],'-CAkey', nameConfig['Root_CA']['key'],'-CAcreateserial','-out', nameConfig['SAS_Unknown_CA']['cert'],'-days', nameConfig['CA_Default']['validity'],'-sha384','-extfile', configFile, '-extensions', 'cbrs_sas_ca'], shell = True)
-
-     def setCPI_CertificateAuthority(self, nameConfig, configFile):
-          certinformation = '/C='+nameConfig['CA_Default']['country']+'/O='+nameConfig['CPI_CA']['organization']+'/OU='+nameConfig['CPI_CA']['OU']+'/CN='+nameConfig['CPI_CA']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['CPI_CA']['key'], nameConfig['CA_Default']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', nameConfig['CPI_CA']['key'],'-out', nameConfig['CPI_CA']['csr'],'-subj', certinformation,'-config', configFile], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', nameConfig['CPI_CA']['csr'],'-CA', nameConfig['Root_CA']['cert'],'-CAkey', nameConfig['Root_CA']['key'],'-CAcreateserial','-out', nameConfig['CPI_CA']['cert'],'-days', nameConfig['CA_Default']['validity'],'-sha384','-extfile', configFile, '-extensions', 'professional_installer_ca'], shell = True)
-
-     def setSAS_Certificates(self, nameConfig, configFile):
-          ## Harness Certificate
-          certinformation = '/C='+nameConfig['CertificateDefault']['country']+'/O='+nameConfig['Harness_Certificate']['organization']+'/OU='+nameConfig['CertificateDefault']['OU']+'/CN='+nameConfig['Harness_Certificate']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['Harness_Certificate']['key'], nameConfig['CertificateDefault']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', nameConfig['Harness_Certificate']['key'],'-out', nameConfig['Harness_Certificate']['csr'],'-subj', certinformation,'-config', configFile], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', nameConfig['Harness_Certificate']['csr'],'-CA', nameConfig['SAS_CA']['cert'],'-CAkey', nameConfig['SAS_CA']['key'],'-CAcreateserial','-out', nameConfig['Harness_Certificate']['cert'],'-days', nameConfig['CertificateDefault']['validity'],'-sha256','-extfile', configFile, '-extensions', 'sas_cert'], shell = True)
+     def setBrokenCertificate(self):
+          pass
           
-          ## Harness Unknown Certificate
-          certinformation = '/C='+nameConfig['CertificateDefault']['country']+'/O='+nameConfig['CertificateDefault']['organization']+'/OU='+nameConfig['CertificateDefault']['OU']+'/CN='+nameConfig['Harness_Unknown_Certificate']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['Harness_Unknown_Certificate']['key'], nameConfig['CertificateDefault']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', nameConfig['Harness_Unknown_Certificate']['key'],'-out', nameConfig['Harness_Unknown_Certificate']['csr'],'-subj', certinformation,'-config', configFile], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', nameConfig['Harness_Unknown_Certificate']['csr'],'-CA', nameConfig['SAS_Unknown_CA']['cert'],'-CAkey', nameConfig['SAS_Unknown_CA']['key'],'-CAcreateserial','-out', nameConfig['Harness_Unknown_Certificate']['cert'],'-days', nameConfig['CertificateDefault']['validity'],'-sha256','-extfile', configFile, '-extensions', 'sas_cert'], shell = True)
-
-          ## Harness Expired Certificate
-          certinformation = '/C='+nameConfig['CertificateDefault']['country']+'/O='+nameConfig['CertificateDefault']['organization']+'/OU='+nameConfig['CertificateDefault']['OU']+'/CN='+nameConfig['Harness_Expire_Certificate']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['Harness_Expire_Certificate']['key'], nameConfig['CertificateDefault']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', nameConfig['Harness_Expire_Certificate']['key'],'-out', nameConfig['Harness_Expire_Certificate']['csr'],'-subj', certinformation,'-config', configFile], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', nameConfig['Harness_Expire_Certificate']['csr'],'-CA', nameConfig['SAS_CA']['cert'],'-CAkey', nameConfig['SAS_CA']['key'],'-CAcreateserial','-out', nameConfig['Harness_Expire_Certificate']['cert'],'-days', nameConfig['Harness_Expire_Certificate']['validity'],'-sha256','-extfile', configFile, '-extensions', 'sas_cert'], shell = True)
-
-          ## Harness Revoke Certificate
-          certinformation = '/C='+nameConfig['CertificateDefault']['country']+'/O='+nameConfig['CertificateDefault']['organization']+'/OU='+nameConfig['CertificateDefault']['OU']+'/CN='+nameConfig['Harness_Revoke_Certificate']['CN']
-          subprocess.call(['openssl','genrsa','-out', nameConfig['Harness_Revoke_Certificate']['key'], nameConfig['CertificateDefault']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', nameConfig['Harness_Revoke_Certificate']['key'],'-out', nameConfig['Harness_Revoke_Certificate']['csr'],'-subj', certinformation,'-config', configFile], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', nameConfig['Harness_Revoke_Certificate']['csr'],'-CA', nameConfig['SAS_CA']['cert'],'-CAkey', nameConfig['SAS_CA']['key'],'-CAcreateserial','-out', nameConfig['Harness_Revoke_Certificate']['cert'],'-days', nameConfig['CertificateDefault']['validity'],'-sha256','-extfile', configFile, '-extensions', 'sas_cert_with_crl'], shell = True)
-
-          ## Harness Broken Certificate
-          self.setBrokenCertificate(nameConfig['Harness_Certificate']['cert'], nameConfig['Harness_Broken_Certificate']['cert'])
-
-     def setBrokenCertificate(self, orifile, brokefile):
-          file_data = ""
-          with open(orifile, "r") as f:
-               for line in f:
-                    file_data += line
-
-          with open(brokefile , "w") as f:
-               f.write(file_data)
-
-     def setCertChain(self, filename, cert1, cert2):
-          file_data = ""
-          with open(cert1 , "r") as f:
-               for line in f:
-                    file_data += line
-
-          with open(cert2, "r") as f:
-               for line in f:
-                    file_data += line
-          
-          with open(filename, "w+") as f:
-               for line in file_data:
-                    f.writelines(line)
-
      def setCRLprefile(self, path):
           file = open(path + "/index.txt", "w")
           file.close()
@@ -289,36 +331,12 @@ class certGeneratorModel(certStructure):
           file.write("01")
           file.close()
 
-     def setCustomerCertificates(self, nameConfig, configFile):
-          keyName = self.setCustomerKey(self.certData['customerType'], nameConfig, configFile)
-          csrName = self.setCustomerCsr(self.certData['customerType'], keyName, nameConfig, configFile)
-          self.setCustomerCert(self.certData['customerType'], csrName, nameConfig, configFile)
+     def getCRLConfig(self, revokedCertConfig):
+          config = collections.defaultdict(str)
+          config.update(revokedCertConfig)
+          config.update(self.certNameConfig["CRL"])
+          return config
 
-     def getCustomerKey(self, customerType, nameConfig, configFile):
-          keyFile = ""
-          customerPath = str(os.path.dirname(os.path.dirname(__file__))) + '\\customerfile'
-          if self.certData['customerFile'] != '' and re.search(r'.key$', self.certData['customerFile'], 0):
-               keyFile = customerPath + self.certData['customerFile']
-          else :
-               # self.setCustomerKey()
-               pass
-
-
-     def setCustomerKey(self, customerType, nameConfig, configFile):
-          customerPath = str(os.path.dirname(os.path.dirname(__file__))) + '\\customerfile'
-          if self.certData['customerFile'] != '' and re.search(r'.key$', self.certData['customerFile'], 0):
-               keyFile = customerPath + self.certData['customerFile']
-               subprocess.call(['openssl','genrsa','-out', keyFile, nameConfig['CertificateDefault']['keysize']])
-          else :
-               keyFile = nameConfig[customerType + '_certificate']['key']
-               subprocess.call(['openssl','genrsa','-out', keyFile, nameConfig['CertificateDefault']['keysize']])
-          return keyFile
-
-     def setCustomerCsr(self, customerType, keyName, nameConfig, configFile):
-          pass
-
-     def setCustomerCert(self, customerType, csrName, nameConfig, configFile):
-          pass
 
 
 class certGeneratorInterface(certGeneratorModel):

@@ -74,7 +74,7 @@ class Generater(object):
 
           #### Root certificate
 
-          certinformation = '/C='+data['CA_Default']['country']+'/O='+data['Root_CA']['organization']+'/OU='+data['Root_CA']['OU']+'/CN='+data['Root_CA']['CN']
+          certinformation = '/C='+data['CA_Default']['countryName']+'/O='+data['Root_CA']['organizationName']+'/OU='+data['Root_CA']['organizationUnitName']+'/CN='+data['Root_CA']['commonName']
           subprocess.call(['openssl','genrsa','-out', data['Root_CA']['key'], data['CA_Default']['keysize']], shell = True)
           subprocess.call(['openssl','req','-new','-x509','-key', data['Root_CA']['key'],'-out', data['Root_CA']['cert'],'-days', data['CA_Default']['validity'],'-subj', certinformation,'-config', config], shell = True)
           
@@ -82,31 +82,31 @@ class Generater(object):
           #### Other CA certificate
 
           ## SAS CA
-          certinformation = '/C='+data['CA_Default']['country']+'/O='+data['CA_Default']['organization']+'/OU='+data['SAS_CA']['OU']+'/CN='+data['SAS_CA']['CN']
+          certinformation = '/C='+data['CA_Default']['countryName']+'/O='+data['CA_Default']['organizationName']+'/OU='+data['SAS_CA']['organizationUnitName']+'/CN='+data['SAS_CA']['commonName']
           subprocess.call(['openssl','genrsa','-out', data['SAS_CA']['key'], data['CA_Default']['keysize']], shell = True)
           subprocess.call(['openssl','req','-new','-key', data['SAS_CA']['key'],'-out', data['SAS_CA']['csr'],'-subj', certinformation,'-config', config], shell = True)
           subprocess.call(['openssl','x509','-req','-in', data['SAS_CA']['csr'],'-CA', data['Root_CA']['cert'],'-CAkey', data['Root_CA']['key'],'-CAcreateserial','-out', data['SAS_CA']['cert'],'-days', data['CA_Default']['validity'],'-sha384','-extfile', config, '-extensions', 'cbrs_sas_ca'], shell = True)
 
           ## CBSD CA
-          certinformation = '/C='+data['CA_Default']['country']+'/O='+data['CA_Default']['organization']+'/OU='+data['CBSD_CA']['OU']+'/CN='+data['CBSD_CA']['CN']
+          certinformation = '/C='+data['CA_Default']['countryName']+'/O='+data['CA_Default']['organizationName']+'/OU='+data['CBSD_CA']['organizationUnitName']+'/CN='+data['CBSD_CA']['commonName']
           subprocess.call(['openssl','genrsa','-out', data['CBSD_CA']['key'], data['CA_Default']['keysize']], shell = True)
           subprocess.call(['openssl','req','-new','-key', data['CBSD_CA']['key'],'-out', data['CBSD_CA']['csr'],'-subj', certinformation,'-config', config], shell = True)
           subprocess.call(['openssl','x509','-req','-in', data['CBSD_CA']['csr'],'-CA', data['Root_CA']['cert'],'-CAkey', data['Root_CA']['key'],'-CAcreateserial','-out', data['CBSD_CA']['cert'],'-days', data['CA_Default']['validity'],'-sha384','-extfile', config, '-extensions', 'cbrs_cbsd_mfr_ca'], shell = True)
 
           ## DP CA
-          certinformation = '/C='+data['CA_Default']['country']+'/O='+data['CA_Default']['organization']+'/OU='+data['DP_CA']['OU']+'/CN='+data['DP_CA']['CN']
+          certinformation = '/C='+data['CA_Default']['countryName']+'/O='+data['CA_Default']['organizationName']+'/OU='+data['DP_CA']['organizationUnitName']+'/CN='+data['DP_CA']['commonName']
           subprocess.call(['openssl','genrsa','-out', data['DP_CA']['key'], data['CA_Default']['keysize']], shell = True)
           subprocess.call(['openssl','req','-new','-key', data['DP_CA']['key'],'-out', data['DP_CA']['csr'],'-subj', certinformation,'-config', config], shell = True)
           subprocess.call(['openssl','x509','-req','-in', data['DP_CA']['csr'],'-CA', data['Root_CA']['cert'],'-CAkey', data['Root_CA']['key'],'-CAcreateserial','-out', data['DP_CA']['cert'],'-days', data['CA_Default']['validity'],'-sha384','-extfile', config, '-extensions', 'cbrs_domain_proxy_ca'], shell = True)
 
           ## SAS Unknown CA
-          certinformation = '/C='+data['CA_Default']['country']+'/O='+data['CA_Default']['organization']+'/OU='+data['SAS_Unknown_CA']['OU']+'/CN='+data['SAS_Unknown_CA']['CN']
+          certinformation = '/C='+data['CA_Default']['countryName']+'/O='+data['CA_Default']['organizationName']+'/OU='+data['SAS_Unknown_CA']['organizationUnitName']+'/CN='+data['SAS_Unknown_CA']['commonName']
           subprocess.call(['openssl','genrsa','-out', data['SAS_Unknown_CA']['key'], data['CA_Default']['keysize']], shell = True)
           subprocess.call(['openssl','req','-new','-key', data['SAS_Unknown_CA']['key'],'-out', data['SAS_Unknown_CA']['csr'],'-subj', certinformation,'-config', config], shell = True)
           subprocess.call(['openssl','x509','-req','-in', data['SAS_Unknown_CA']['csr'],'-CA', data['Root_CA']['cert'],'-CAkey', data['Root_CA']['key'],'-CAcreateserial','-out', data['SAS_Unknown_CA']['cert'],'-days', data['CA_Default']['validity'],'-sha384','-extfile', config, '-extensions', 'cbrs_sas_ca'], shell = True)
           
           ## CPI CA
-          certinformation = '/C='+data['CA_Default']['country']+'/O='+data['CPI_CA']['organization']+'/OU='+data['CPI_CA']['OU']+'/CN='+data['CPI_CA']['CN']
+          certinformation = '/C='+data['CA_Default']['countryName']+'/O='+data['CPI_CA']['organizationName']+'/OU='+data['CPI_CA']['organizationUnitName']+'/CN='+data['CPI_CA']['commonName']
           subprocess.call(['openssl','genrsa','-out', data['CPI_CA']['key'], data['CA_Default']['keysize']], shell = True)
           subprocess.call(['openssl','req','-new','-key', data['CPI_CA']['key'],'-out', data['CPI_CA']['csr'],'-subj', certinformation,'-config', config], shell = True)
           subprocess.call(['openssl','x509','-req','-in', data['CPI_CA']['csr'],'-CA', data['Root_CA']['cert'],'-CAkey', data['Root_CA']['key'],'-CAcreateserial','-out', data['CPI_CA']['cert'],'-days', data['CA_Default']['validity'],'-sha384','-extfile', config, '-extensions', 'professional_installer_ca'], shell = True)
@@ -115,31 +115,31 @@ class Generater(object):
           #### SAS Test Harness Certificate
      
           ## Harness Certificate
-          certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['Harness_Certificate']['organization']+'/OU='+data['CertificateDefault']['OU']+'/CN='+data['Harness_Certificate']['CN']
+          certinformation = '/C='+data['CertificateDefault']['countryName']+'/O='+data['Harness_Certificate']['organizationName']+'/OU='+data['CertificateDefault']['organizationUnitName']+'/CN='+data['Harness_Certificate']['commonName']
           subprocess.call(['openssl','genrsa','-out', data['Harness_Certificate']['key'], data['CertificateDefault']['keysize']], shell = True)
           subprocess.call(['openssl','req','-new','-key', data['Harness_Certificate']['key'],'-out', data['Harness_Certificate']['csr'],'-subj', certinformation,'-config', config], shell = True)
           subprocess.call(['openssl','x509','-req','-in', data['Harness_Certificate']['csr'],'-CA', data['SAS_CA']['cert'],'-CAkey', data['SAS_CA']['key'],'-CAcreateserial','-out', data['Harness_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'sas_cert'], shell = True)
           
           ## Harness Unknown Certificate
-          certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['CertificateDefault']['OU']+'/CN='+data['Harness_Unknown_Certificate']['CN']
+          certinformation = '/C='+data['CertificateDefault']['countryName']+'/O='+data['CertificateDefault']['organizationName']+'/OU='+data['CertificateDefault']['organizationUnitName']+'/CN='+data['Harness_Unknown_Certificate']['commonName']
           subprocess.call(['openssl','genrsa','-out', data['Harness_Unknown_Certificate']['key'], data['CertificateDefault']['keysize']], shell = True)
           subprocess.call(['openssl','req','-new','-key', data['Harness_Unknown_Certificate']['key'],'-out', data['Harness_Unknown_Certificate']['csr'],'-subj', certinformation,'-config', config], shell = True)
           subprocess.call(['openssl','x509','-req','-in', data['Harness_Unknown_Certificate']['csr'],'-CA', data['SAS_Unknown_CA']['cert'],'-CAkey', data['SAS_Unknown_CA']['key'],'-CAcreateserial','-out', data['Harness_Unknown_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'sas_cert'], shell = True)
 
           ## Harness Expired Certificate
-          certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['CertificateDefault']['OU']+'/CN='+data['Harness_Expire_Certificate']['CN']
-          subprocess.call(['openssl','genrsa','-out', data['Harness_Expire_Certificate']['key'], data['CertificateDefault']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', data['Harness_Expire_Certificate']['key'],'-out', data['Harness_Expire_Certificate']['csr'],'-subj', certinformation,'-config', config], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', data['Harness_Expire_Certificate']['csr'],'-CA', data['SAS_CA']['cert'],'-CAkey', data['SAS_CA']['key'],'-CAcreateserial','-out', data['Harness_Expire_Certificate']['cert'],'-days', data['Harness_Expire_Certificate']['validity'],'-sha256','-extfile', config, '-extensions', 'sas_cert'], shell = True)
+          certinformation = '/C='+data['CertificateDefault']['countryName']+'/O='+data['CertificateDefault']['organizationName']+'/OU='+data['CertificateDefault']['organizationUnitName']+'/CN='+data['Harness_Expired_Certificate']['commonName']
+          subprocess.call(['openssl','genrsa','-out', data['Harness_Expired_Certificate']['key'], data['CertificateDefault']['keysize']], shell = True)
+          subprocess.call(['openssl','req','-new','-key', data['Harness_Expired_Certificate']['key'],'-out', data['Harness_Expired_Certificate']['csr'],'-subj', certinformation,'-config', config], shell = True)
+          subprocess.call(['openssl','x509','-req','-in', data['Harness_Expired_Certificate']['csr'],'-CA', data['SAS_CA']['cert'],'-CAkey', data['SAS_CA']['key'],'-CAcreateserial','-out', data['Harness_Expired_Certificate']['cert'],'-days', data['Harness_Expired_Certificate']['validity'],'-sha256','-extfile', config, '-extensions', 'sas_cert'], shell = True)
 
           ## Harness Revoke Certificate
-          certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['CertificateDefault']['OU']+'/CN='+data['Harness_Revoke_Certificate']['CN']
-          subprocess.call(['openssl','genrsa','-out', data['Harness_Revoke_Certificate']['key'], data['CertificateDefault']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', data['Harness_Revoke_Certificate']['key'],'-out', data['Harness_Revoke_Certificate']['csr'],'-subj', certinformation,'-config', config], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', data['Harness_Revoke_Certificate']['csr'],'-CA', data['SAS_CA']['cert'],'-CAkey', data['SAS_CA']['key'],'-CAcreateserial','-out', data['Harness_Revoke_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'sas_cert_with_crl'], shell = True)
+          certinformation = '/C='+data['CertificateDefault']['countryName']+'/O='+data['CertificateDefault']['organizationName']+'/OU='+data['CertificateDefault']['organizationUnitName']+'/CN='+data['Harness_Revoked_Certificate']['commonName']
+          subprocess.call(['openssl','genrsa','-out', data['Harness_Revoked_Certificate']['key'], data['CertificateDefault']['keysize']], shell = True)
+          subprocess.call(['openssl','req','-new','-key', data['Harness_Revoked_Certificate']['key'],'-out', data['Harness_Revoked_Certificate']['csr'],'-subj', certinformation,'-config', config], shell = True)
+          subprocess.call(['openssl','x509','-req','-in', data['Harness_Revoked_Certificate']['csr'],'-CA', data['SAS_CA']['cert'],'-CAkey', data['SAS_CA']['key'],'-CAcreateserial','-out', data['Harness_Revoked_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'sas_cert_with_crl'], shell = True)
 
           ## Harness Broken Certificate
-          self.createBrokenCertificate(data['Harness_Certificate']['cert'], data['Harness_Broken_Certificate']['cert'])
+          self.createBrokenCertificate(data['Harness_Certificate']['cert'], data['Harness_Corrupted_Certificate']['cert'])
 
 
           #### the unified PKI chain PEM file containing sub-CA
@@ -147,18 +147,18 @@ class Generater(object):
           targetpath = str(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) + "\\certificates\\ManagedCerts\\SAS-Test-Harnss\\"
           self.createCertChain(targetpath + "SCS1\\" + data['Harness_Certificate']['cert'], data['Harness_Certificate']['cert'], data['SAS_CA']['cert'])
           self.createCertChain(targetpath + "SCS4\\" + data['Harness_Certificate']['cert'], data['Harness_Unknown_Certificate']['cert'], data['SAS_CA']['cert'])
-          self.createCertChain(targetpath + "SCS3\\" + data['Harness_Certificate']['cert'], data['Harness_Expire_Certificate']['cert'], data['SAS_CA']['cert'])
-          self.createCertChain(targetpath + "SCS2\\" + data['Harness_Certificate']['cert'], data['Harness_Revoke_Certificate']['cert'], data['SAS_CA']['cert'])
-          self.createCertChain(targetpath + "SCS5\\" + data['Harness_Certificate']['cert'], data['Harness_Broken_Certificate']['cert'], data['SAS_CA']['cert'])
+          self.createCertChain(targetpath + "SCS3\\" + data['Harness_Certificate']['cert'], data['Harness_Expired_Certificate']['cert'], data['SAS_CA']['cert'])
+          self.createCertChain(targetpath + "SCS2\\" + data['Harness_Certificate']['cert'], data['Harness_Revoked_Certificate']['cert'], data['SAS_CA']['cert'])
+          self.createCertChain(targetpath + "SCS5\\" + data['Harness_Certificate']['cert'], data['Harness_Corrupted_Certificate']['cert'], data['SAS_CA']['cert'])
 
 
           #### CPI Certificate
 
-          certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['CPI_certificate']['OU']+'/CN='+data['CPI_certificate']['CN']
-          subprocess.call(['openssl','genrsa','-out', data['CPI_certificate']['key'], data['CertificateDefault']['keysize']], shell = True)
-          subprocess.call(['openssl','req','-new','-key', data['CPI_certificate']['key'],'-out', data['CPI_certificate']['csr'],'-subj', certinformation,'-config', config], shell = True)
-          subprocess.call(['openssl','x509','-req','-in', data['CPI_certificate']['csr'],'-CA', data['CPI_CA']['cert'],'-CAkey', data['CPI_CA']['key'],'-CAcreateserial','-out', data['CPI_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cpi_cert'], shell = True)
-          self.createCertChain(targetpath + data['CPI_certificate']['cert'], data['CPI_certificate']['cert'], data['CPI_certificate']['key'])
+          certinformation = '/C='+data['CertificateDefault']['countryName']+'/O='+data['CertificateDefault']['organizationName']+'/OU='+data['CPI_Certificate']['organizationUnitName']+'/CN='+data['CPI_Certificate']['commonName']
+          subprocess.call(['openssl','genrsa','-out', data['CPI_Certificate']['key'], data['CertificateDefault']['keysize']], shell = True)
+          subprocess.call(['openssl','req','-new','-key', data['CPI_Certificate']['key'],'-out', data['CPI_Certificate']['csr'],'-subj', certinformation,'-config', config], shell = True)
+          subprocess.call(['openssl','x509','-req','-in', data['CPI_Certificate']['csr'],'-CA', data['CPI_CA']['cert'],'-CAkey', data['CPI_CA']['key'],'-CAcreateserial','-out', data['CPI_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cpi_cert'], shell = True)
+          self.createCertChain(targetpath + data['CPI_Certificate']['cert'], data['CPI_Certificate']['cert'], data['CPI_Certificate']['key'])
 
           #### Certificate Revocation List (CRL file)
 
@@ -167,7 +167,7 @@ class Generater(object):
 
           ## create CRL
           subprocess.call(['openssl','ca','-config', config,'-gencrl','-keyfile', data['SAS_CA']['key'],'-cert', data['SAS_CA']['cert'],'-out', data['CRL']['emptycrl']], shell = True)
-          subprocess.call(['openssl','ca','-revoke', data['Harness_Revoke_Certificate']['cert'],'-config', config,'-keyfile', data['SAS_CA']['key'],'-cert', data['SAS_CA']['cert']], shell = True)
+          subprocess.call(['openssl','ca','-revoke', data['Harness_Revoked_Certificate']['cert'],'-config', config,'-keyfile', data['SAS_CA']['key'],'-cert', data['SAS_CA']['cert']], shell = True)
           subprocess.call(['openssl','ca','-config', config,'-gencrl','-keyfile', data['SAS_CA']['key'],'-cert', data['SAS_CA']['cert'],'-out', data['CRL']['servercrl']], shell = True)
 
           #### Copy
@@ -178,9 +178,9 @@ class Generater(object):
           subprocess.call('COPY '+curpath+ data['CRL']['servercrl'] + targetpath + data['CRL']['servercrl'], shell = True)
           subprocess.call('COPY '+curpath+ data['Harness_Certificate']['key']  +targetpath+ 'SCS1\\' + data['Harness_Certificate']['key'],   shell = True)
           subprocess.call('COPY '+curpath+ data['Harness_Unknown_Certificate']['key']  +targetpath+ 'SCS4\\' + data['Harness_Certificate']['key'],   shell = True)
-          subprocess.call('COPY '+curpath+ data['Harness_Expire_Certificate']['key']   +targetpath+ 'SCS3\\' + data['Harness_Certificate']['key'],   shell = True)
-          subprocess.call('COPY '+curpath+ data['Harness_Revoke_Certificate']['key']   +targetpath+ 'SCS2\\' + data['Harness_Certificate']['key'],   shell = True)
-          subprocess.call('COPY '+curpath+ data['Harness_Broken_Certificate']['key']   +targetpath+ 'SCS5\\' + data['Harness_Certificate']['key'],   shell = True)
+          subprocess.call('COPY '+curpath+ data['Harness_Expired_Certificate']['key']   +targetpath+ 'SCS3\\' + data['Harness_Certificate']['key'],   shell = True)
+          subprocess.call('COPY '+curpath+ data['Harness_Revoked_Certificate']['key']   +targetpath+ 'SCS2\\' + data['Harness_Certificate']['key'],   shell = True)
+          subprocess.call('COPY '+curpath+ data['Harness_Corrupted_Certificate']['key']   +targetpath+ 'SCS5\\' + data['Harness_Certificate']['key'],   shell = True)
 
           os.chdir(str(self.homepath))
      
@@ -225,22 +225,22 @@ class Generater(object):
           config = str(self.homepath)+'\\config\\'+data['ConfigFile']['config']
           os.chdir(str(self.homepath)+'\\certificates\\OringinalCerts')
           if self.certfile == '':
-               certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['UUT_certificate']['OU']+'/CN='+self.fccid+':'+self.sn
-               subprocess.call(['openssl','genrsa','-out', data['UUT_certificate']['key'], data['CertificateDefault']['keysize']])
-               subprocess.call(['openssl','req','-new','-key', data['UUT_certificate']['key'],'-out', data['UUT_certificate']['csr'],'-subj', certinformation,'-config', config])
-               subprocess.call(['openssl','x509','-req','-in', data['UUT_certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+               certinformation = '/C='+data['CertificateDefault']['countryName']+'/O='+data['CertificateDefault']['organizationName']+'/OU='+data['CBSD_Certificate']['organizationUnitName']+'/CN='+self.fccid+':'+self.sn
+               subprocess.call(['openssl','genrsa','-out', data['CBSD_Certificate']['key'], data['CertificateDefault']['keysize']])
+               subprocess.call(['openssl','req','-new','-key', data['CBSD_Certificate']['key'],'-out', data['CBSD_Certificate']['csr'],'-subj', certinformation,'-config', config])
+               subprocess.call(['openssl','x509','-req','-in', data['CBSD_Certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['CBSD_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
           elif re.search(r'.key$', self.certfile, 0):
-               certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['UUT_certificate']['OU']+'/CN='+self.fccid+':'+self.sn
-               subprocess.call(['openssl','req','-new','-key', customerfilepath+self.certfile,'-out', data['UUT_certificate']['csr'],'-subj', certinformation,'-config', config])
-               subprocess.call(['openssl','x509','-req','-in', data['UUT_certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+               certinformation = '/C='+data['CertificateDefault']['countryName']+'/O='+data['CertificateDefault']['organizationName']+'/OU='+data['CBSD_Certificate']['organizationUnitName']+'/CN='+self.fccid+':'+self.sn
+               subprocess.call(['openssl','req','-new','-key', customerfilepath+self.certfile,'-out', data['CBSD_Certificate']['csr'],'-subj', certinformation,'-config', config])
+               subprocess.call(['openssl','x509','-req','-in', data['CBSD_Certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['CBSD_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
           elif re.search(r'.csr$', self.certfile, 0):
-               subprocess.call(['openssl','x509','-req','-in', customerfilepath+self.certfile,'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+               subprocess.call(['openssl','x509','-req','-in', customerfilepath+self.certfile,'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['CBSD_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
 
           
           curpath = str(self.homepath)+'\\certificates\\OringinalCerts\\'
           targetpath = str(self.homepath)+'\\certificates\\ManagedCerts\\UUT\\'
 
-          self.createCertChain(targetpath + data['UUT_certificate']['cert'], data['UUT_certificate']['cert'], data['CBSD_CA']['cert'])
+          self.createCertChain(targetpath + data['CBSD_Certificate']['cert'], data['CBSD_Certificate']['cert'], data['CBSD_CA']['cert'])
 
           subprocess.call('COPY '+curpath+ data['Root_CA']['cert'] + ' ' + targetpath + data['Root_CA']['cert'], shell = True)
           subprocess.call('COPY '+curpath+ data['CBSD_CA']['cert'] + ' ' + targetpath + data['CBSD_CA']['cert'], shell = True)
@@ -255,24 +255,24 @@ class Generater(object):
           config = str(self.homepath)+'\\config\\'+data['ConfigFile']['config']
           os.chdir(str(self.homepath)+'\\certificates\\OringinalCerts')
           if self.certfile == '':
-               certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['UUT_certificate']['OU']+'/CN='+self.fccid+':'+self.sn
-               subprocess.call(['openssl','genrsa','-out', data['UUT_certificate']['key'], data['CertificateDefault']['keysize']])
-               subprocess.call(['openssl','req','-new','-key', data['UUT_certificate']['key'],'-out', data['UUT_certificate']['csr'],'-subj', certinformation,'-config', config])
-               subprocess.call(['openssl','x509','-req','-in', data['UUT_certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+               certinformation = '/C='+data['CertificateDefault']['countryName']+'/O='+data['CertificateDefault']['organizationName']+'/OU='+data['CBSD_Certificate']['organizationUnitName']+'/CN='+self.fccid+':'+self.sn
+               subprocess.call(['openssl','genrsa','-out', data['CBSD_Certificate']['key'], data['CertificateDefault']['keysize']])
+               subprocess.call(['openssl','req','-new','-key', data['CBSD_Certificate']['key'],'-out', data['CBSD_Certificate']['csr'],'-subj', certinformation,'-config', config])
+               subprocess.call(['openssl','x509','-req','-in', data['CBSD_Certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['CBSD_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
 
                # subprocess.call(['openssl','genrsa','-out', data['DP_certificate']['key'], data['CertificateDefault']['keysize']])
                # subprocess.call(['openssl','req','-new','-key', data['DP_certificate']['key'],'-out', data['DP_certificate']['csr'],'-subj', certinformation,'-config', config])
                # subprocess.call(['openssl','x509','-req','-in', data['DP_certificate']['csr'],'-CA', data['DP_CA']['cert'],'-CAkey', data['DP_CA']['key'],'-CAcreateserial','-out', data['DP_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'domain_proxy_cert'])
           
           elif re.search(r'.key$', self.certfile, 0):
-               certinformation = '/C='+data['CertificateDefault']['country']+'/O='+data['CertificateDefault']['organization']+'/OU='+data['UUT_certificate']['OU']+'/CN='+self.fccid+':'+self.sn
-               subprocess.call(['openssl','req','-new','-key', customerfilepath+self.certfile,'-out', data['UUT_certificate']['csr'],'-subj', certinformation,'-config', config])
-               subprocess.call(['openssl','x509','-req','-in', data['UUT_certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+               certinformation = '/C='+data['CertificateDefault']['countryName']+'/O='+data['CertificateDefault']['organizationName']+'/OU='+data['CBSD_Certificate']['organizationUnitName']+'/CN='+self.fccid+':'+self.sn
+               subprocess.call(['openssl','req','-new','-key', customerfilepath+self.certfile,'-out', data['CBSD_Certificate']['csr'],'-subj', certinformation,'-config', config])
+               subprocess.call(['openssl','x509','-req','-in', data['CBSD_Certificate']['csr'],'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['CBSD_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
           
                # subprocess.call(['openssl','req','-new','-key', customerfilepath+self.certfile,'-out', data['DP_certificate']['csr'],'-subj', certinformation,'-config', config])
                # subprocess.call(['openssl','x509','-req','-in', data['DP_certificate']['csr'],'-CA', data['DP_CA']['cert'],'-CAkey', data['DP_CA']['key'],'-CAcreateserial','-out', data['DP_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'domain_proxy_cert'])
           elif re.search(r'.csr$', self.certfile, 0):
-               subprocess.call(['openssl','x509','-req','-in', customerfilepath+self.certfile,'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['UUT_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
+               subprocess.call(['openssl','x509','-req','-in', customerfilepath+self.certfile,'-CA', data['CBSD_CA']['cert'],'-CAkey', data['CBSD_CA']['key'],'-CAcreateserial','-out', data['CBSD_Certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'cbsd_cert'])
 
                # subprocess.call(['openssl','x509','-req','-in', customerfilepath+self.certfile,'-CA', data['DP_CA']['cert'],'-CAkey', data['DP_CA']['key'],'-CAcreateserial','-out', data['DP_certificate']['cert'],'-days', data['CertificateDefault']['validity'],'-sha256','-extfile', config, '-extensions', 'domain_proxy_cert'])
 
@@ -280,16 +280,16 @@ class Generater(object):
           curpath = str(self.homepath)+'\\certificates\\OringinalCerts\\'
           targetpath = str(self.homepath)+'\\certificates\\ManagedCerts\\UUT\\'
 
-          self.createCertChain(targetpath + data['UUT_certificate']['cert'], data['UUT_certificate']['cert'], data['CBSD_CA']['cert'])
+          self.createCertChain(targetpath + data['CBSD_Certificate']['cert'], data['CBSD_Certificate']['cert'], data['CBSD_CA']['cert'])
           self.createCertChain(targetpath + "PKI.pem", curpath + data['CBSD_CA']['cert'], curpath + data['Root_CA']['cert'])
-          self.createCertChain(targetpath + "CPI.pem", curpath + data['CPI_certificate']['cert'], curpath + data['CPI_certificate']['key'])
+          self.createCertChain(targetpath + "CPI.pem", curpath + data['CPI_Certificate']['cert'], curpath + data['CPI_Certificate']['key'])
 
           # self.createCertChain(targetpath + data['DP_certificate']['cert'], data['DP_certificate']['cert'], data['DP_certificate']['key'])
           # self.createCertChain(targetpath + "DP_PKI.pem", curpath + data['DP_CA']['cert'], curpath + data['Root_CA']['cert'])
 
           subprocess.call('COPY '+ curpath + data['Root_CA']['cert'] + ' ' + targetpath + data['Root_CA']['cert'], shell = True)
           subprocess.call('COPY '+ curpath + data['CBSD_CA']['cert'] + ' ' + targetpath + data['CBSD_CA']['cert'], shell = True)
-          subprocess.call('COPY '+ curpath + data['DP_CA']['cert'] + ' ' + targetpath + data['DP_CA']['cert'], shell = True)
+          # subprocess.call('COPY '+ curpath + data['DP_CA']['cert'] + ' ' + targetpath + data['DP_CA']['cert'], shell = True)
           # subprocess.call('cls', shell = True)
 
 

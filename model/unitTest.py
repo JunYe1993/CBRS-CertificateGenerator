@@ -2,37 +2,10 @@ import os
 import unittest
 import subprocess
 import json
-from certGenerator import certStructure
 from certGenerator import certificateAuthorityStructure
 from certGenerator import certGeneratorModel
 
-class Test_certStructure(unittest.TestCase):
-     
-     def test_init_1(self):
-          
-          # Arrange 
-          spec = {"fccid": "123", "sn": "321", "outputDirName": "qwert"}
-          testclass = certStructure(spec)
-          
-          # Act
-          result = testclass.certData
-          expect = spec
-
-          # Assert
-          self.assertEqual(result, expect)
-
-     def test_init_2(self):
-          
-          # Arrange 
-          testclass = certStructure()
-          
-          # Act
-          result = testclass.certData
-          expect = {"outputDirName":"certificates"}
-
-          # Assert
-          self.assertEqual(result, expect)
-
+"""
 class Test_certificateAuthorityStructure(unittest.TestCase):
 
      def setUp(self):
@@ -49,7 +22,7 @@ class Test_certificateAuthorityStructure(unittest.TestCase):
           self.testclass = None
           os.chdir(str(os.path.dirname(__file__)))
           subprocess.call('rmdir ' + self.homePath + ' /s /q', shell = True)
-     """
+     
      def test_setKey_Normal(self):
           # Arrange 
           config = {'key': '123.key', 'keysize': '4096'}
@@ -169,7 +142,7 @@ class Test_certificateAuthorityStructure(unittest.TestCase):
 
           # Assert
           self.assertEqual(result, expect)
-     """
+     
      def test_setCert_Normal(self):
           # Arrange 
           config = {'key': 'root.key', 'keysize': '4096'}
@@ -246,8 +219,11 @@ class Test_certificateAuthorityStructure(unittest.TestCase):
 
           # Assert
           self.assertEqual(result, expect)
-
+"""
 class Test_certGeneratorModel(unittest.TestCase):
+
+     def setUp(self):
+          self.rootPath = str(os.path.dirname(os.path.dirname(__file__)))
      
      def test_init(self):
           
@@ -300,6 +276,38 @@ class Test_certGeneratorModel(unittest.TestCase):
           result = os.path.isfile(testclass.configFile)
           expect = True
           testclass.removeDir()
+
+          # Assert
+          self.assertEqual(result, expect)
+     """
+     def test_setRootCA(self):
+
+          # Arrange 
+          testclass = certGeneratorModel()
+          testclass.setConfig()
+          testclass.setRootCA()
+          
+          # Act
+          result = os.path.isfile(testclass.configFile)
+          expect = True
+          # testclass.removeDir()
+
+          # Assert
+          self.assertEqual(result, expect)
+     """
+     def test_setSASCA(self):
+
+          # Arrange 
+          testclass = certGeneratorModel({'customerFile': self.rootPath + '/customerfile/cbsduutcsr.csr'})
+          testclass.setConfig()
+          testclass.setRootCA()
+          testclass.setCertificateAuthority()
+          testclass.setCertificate()
+          
+          # Act
+          result = os.path.isfile(testclass.configFile)
+          expect = True
+          # testclass.removeDir()
 
           # Assert
           self.assertEqual(result, expect)
