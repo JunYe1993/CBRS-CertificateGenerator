@@ -1,8 +1,10 @@
-import os
+# -*- coding: UTF-8 -*-
+import os, sys
 import collections
 import subprocess
 import json
 import re
+import glob 
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
 from logger import logger
 
@@ -191,21 +193,21 @@ class certGeneratorModel(certStructure):
           self.setConfig()
 
      def removeDir(self):
-          subprocess.call('rmdir '+str(self.rootPath)+' /s /q', shell = True)
+          subprocess.call('rmdir ' + os.path.abspath(self.rootPath) + ' /s /q', shell = True)
 
      def makeDir(self):
           # remove dir which has the same name
-          if os.path.isdir(str(self.rootPath)): self.removeDir()
+          self.removeDir()
 
-          subprocess.call('mkdir ' + str(self.outputUUTCertPath), shell = True)
-          subprocess.call('mkdir ' + str(self.outputHarnessCertPath) + '\\SCS1', shell = True)
-          subprocess.call('mkdir ' + str(self.outputHarnessCertPath) + '\\SCS2', shell = True)
-          subprocess.call('mkdir ' + str(self.outputHarnessCertPath) + '\\SCS3', shell = True)
-          subprocess.call('mkdir ' + str(self.outputHarnessCertPath) + '\\SCS4', shell = True)
-          subprocess.call('mkdir ' + str(self.outputHarnessCertPath) + '\\SCS5', shell = True)
+          subprocess.call('mkdir ' + os.path.abspath(self.outputUUTCertPath), shell = True)
+          subprocess.call('mkdir ' + os.path.abspath(self.outputHarnessCertPath) + '\\SCS1', shell = True)
+          subprocess.call('mkdir ' + os.path.abspath(self.outputHarnessCertPath) + '\\SCS2', shell = True)
+          subprocess.call('mkdir ' + os.path.abspath(self.outputHarnessCertPath) + '\\SCS3', shell = True)
+          subprocess.call('mkdir ' + os.path.abspath(self.outputHarnessCertPath) + '\\SCS4', shell = True)
+          subprocess.call('mkdir ' + os.path.abspath(self.outputHarnessCertPath) + '\\SCS5', shell = True)
 
           # to work with config/opensslcbrs1.cnf
-          subprocess.call('mkdir ' + str(self.rawCertPath) + '\\etc\\pki\\CA', shell = True)
+          subprocess.call('mkdir ' + os.path.abspath(self.rawCertPath) + '\\etc\\pki\\CA', shell = True)
 
      def setConfig(self):
           configPath = str(os.path.dirname(os.path.dirname(__file__))) + '\\config'
@@ -214,7 +216,7 @@ class certGeneratorModel(certStructure):
           self.configFile = configPath + '\\' + self.certNameConfig['ConfigFile']['config']
 
      def setToRawCertPath(self):
-          os.chdir(self.rawCertPath)
+          os.chdir(os.path.abspath(self.rawCertPath))
 
      def setRootCA(self):
           self.setToRawCertPath()
@@ -238,20 +240,17 @@ class certGeneratorModel(certStructure):
           self.SAS_harness_unknown_Cert = self.getCertificate("Harness_Unknown", "SAS")
           self.SAS_harness_revoked_Cert = self.getCertificate("Harness_Revoked", "SAS")
           self.revokeCerticate(self.SAS_harness_revoked_Cert, self.SAS_CA)
-
           self.CPI_Cert = self.getCertificate("CPI", "CPI")
-          self.CBSD_Cert = self.getCertificate("CBSD", "CBSD")
-          self.DP_Cert = self.getCertificate("DP", "DP")
+
+     def setUUTCertificate(self):
+          UUT_Type = self.certData['customerType']
+          self.CBSD_Cert = self.getCertificate(UUT_Type, UUT_Type)
           
      def revokeCerticate(self, revokeCert = certificateAuthorityStructure(), revokeCA = certificateAuthorityStructure()):
           self.setCRLprefile(str(self.rawCertPath) + '\\etc\\pki\\CA')
           config = self.getCRLConfig({'revokeCert': revokeCA.certData['cert']}) 
           revokeCA.initCRL(config)
           revokeCA.revokeCertificate(config)
-
-
-
-
 
 
 
@@ -291,16 +290,14 @@ class certGeneratorModel(certStructure):
           return config
 
      def generateCertificate(self, Cert = certificateAuthorityStructure()):
-
           if Cert.certData['theTypeOfUUT'] == True:
                CustomerFile = self.certData['customerFile']
                noCustomerFile = ''
                isFileKey = re.search(r'.key$', CustomerFile, 0)
                isFileCsr = re.search(r'.csr$', CustomerFile, 0)
-               
-               
-
+               print str(CustomerFile) + '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
                if CustomerFile == noCustomerFile:
+                    Cert.certData['commonName'] = self.certData['fccId'] + ':' + self.certData['sn']
                     Cert.setKey()
                     Cert.setCsr()
                     Cert.setCert()
@@ -337,10 +334,74 @@ class certGeneratorModel(certStructure):
           config.update(self.certNameConfig["CRL"])
           return config
 
+class certGeneratorInterface(object):
 
-
-class certGeneratorInterface(certGeneratorModel):
-
-     pass
-
+     def __init__(self):
+          self.rootPath = str(os.path.dirname(os.path.dirname(__file__)))
+          self.customerFile = ''
+          self.fccId = ''
+          self.sn = ''
      
+     def userTypeIn(self):
+          typeIn = raw_input('>> ')
+          if typeIn == 'quit':
+               sys.exit()
+          else:
+               return typeIn
+
+     def isConfigExist(self):
+          isConfigExist = False
+          with open(self.rootPath + '\\config\\cert.json', 'r') as json_file:
+               isConfigExist =  True
+          return isConfigExist
+
+     def menuQuestion(self):
+          print '----------------------------'
+          print u' 請選擇...'
+          print u' (1) CBSD'
+          print u' (2) CBSD with Domain Proxy'
+          print u' (quit) 離開程式'
+          print '----------------------------'
+
+          userchoice = self.userTypeIn()
+          if userchoice == '1':
+               self.uutType = 'CBSD'
+               return True
+          elif userchoice == '2':
+               self.uutType = 'DP'
+               return True
+          else :
+               return False
+
+     def customerFileExistQuestion(self):
+          print u'客戶有無提供憑證相關檔案(Y/N)?'
+          return self.userTypeIn()
+
+     def customerFileNameQuestion(self):
+          os.chdir(self.rootPath + '\\customerfile')
+          print u'請輸入檔名( XXX.csr / XXX.key )'
+          for name in glob.glob('*'): print name
+          return self.userTypeIn()
+
+     def customerCommonNameQuestion(self):
+          print(u'請輸入 UUT FCC ID')
+          self.fccId = self.userTypeIn()
+          print(u'請輸入 UUT Serial Number')
+          self.sn = self.userTypeIn()
+
+     def certificateFolderName(self):
+          print(u'請輸入 Certificate 資料夾名稱(預設certificates)')
+          self.folderName = self.userTypeIn()
+          self.folderName = self.folderName.strip()
+
+     def certGenerate(self):
+          config = {'customerType': self.uutType, 'outputDirName': self.folderName}
+          config.update({'fccId': self.fccId, 'sn': self.sn})
+          if self.customerFile != '': config.update({'customerFile': self.rootPath + '/customerfile/' + self.customerFile})
+          generator = certGeneratorModel(config)
+          generator.setConfig()
+          generator.setRootCA()
+          generator.setCertificateAuthority()
+          generator.setCertificate()
+          generator.setUUTCertificate()
+

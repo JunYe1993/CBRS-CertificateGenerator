@@ -303,6 +303,7 @@ class Test_certGeneratorModel(unittest.TestCase):
           testclass.setRootCA()
           testclass.setCertificateAuthority()
           testclass.setCertificate()
+          testclass.setUUTCertificate()
           
           # Act
           result = os.path.isfile(testclass.configFile)
