@@ -229,9 +229,11 @@ class certGeneratorModel(certStructure):
           self.setToRawCertPath()
           self.SAS_CA = self.getCertificateAuthority("SAS", "Root")
           self.unknownSAS_CA = self.getCertificateAuthority("SAS_Unknown", "Root")
+          self.CPI_CA = self.getCertificateAuthority("CPI", "Root")
           self.CBSD_CA = self.getCertificateAuthority("CBSD", "Root")
           self.DP_CA = self.getCertificateAuthority("DP", "Root")
-          self.CPI_CA = self.getCertificateAuthority("CPI", "Root")
+
+          self.UUT_CA = self.CBSD_CA if self.certData['customerType'] == "CBSD" else self.DP_CA
 
      def setCertificate(self):
           self.setToRawCertPath()
@@ -244,7 +246,7 @@ class certGeneratorModel(certStructure):
 
      def setUUTCertificate(self):
           UUT_Type = self.certData['customerType']
-          self.CBSD_Cert = self.getCertificate(UUT_Type, UUT_Type)
+          self.UUT_Cert = self.getCertificate(UUT_Type, UUT_Type)
           
      def revokeCerticate(self, revokeCert = certificateAuthorityStructure(), revokeCA = certificateAuthorityStructure()):
           self.setCRLprefile(str(self.rawCertPath) + '\\etc\\pki\\CA')
@@ -252,6 +254,34 @@ class certGeneratorModel(certStructure):
           revokeCA.initCRL(config)
           revokeCA.revokeCertificate(config)
 
+     def copySAScertificate(self):
+          self.setToRawCertPath()
+          certName = self.SAS_harness_Cert.certData['cert']
+          keyName  = self.SAS_harness_Cert.certData['key']
+          
+          # root
+          self.copyFile(self.Root_CA.certData['cert'], self.outputHarnessCertPath + "\\" + self.Root_CA.certData['cert'])
+          
+          # SAS certificate
+          self.copyChainFile(self.outputHarnessCertPath + "\\SCS1\\" + certName, self.SAS_harness_Cert.certData['cert'], self.SAS_CA.certData['cert'])
+          self.copyChainFile(self.outputHarnessCertPath + "\\SCS2\\" + certName, self.SAS_harness_revoked_Cert.certData['cert'], self.SAS_CA.certData['cert'])
+          self.copyChainFile(self.outputHarnessCertPath + "\\SCS3\\" + certName, self.SAS_harness_expired_Cert.certData['cert'], self.SAS_CA.certData['cert'])
+          self.copyChainFile(self.outputHarnessCertPath + "\\SCS4\\" + certName, self.SAS_harness_unknown_Cert.certData['cert'], self.SAS_CA.certData['cert'])
+          self.copyChainFile(self.outputHarnessCertPath + "\\SCS5\\" + certName, self.SAS_harness_Cert.certData['cert'], self.SAS_CA.certData['cert'])
+          self.copyFile(self.SAS_harness_Cert.certData['key'], self.outputHarnessCertPath + "\\SCS1\\" + keyName)
+          self.copyFile(self.SAS_harness_revoked_Cert.certData['key'], self.outputHarnessCertPath + "\\SCS2\\" + keyName)
+          self.copyFile(self.SAS_harness_expired_Cert.certData['key'], self.outputHarnessCertPath + "\\SCS3\\" + keyName)
+          self.copyFile(self.SAS_harness_unknown_Cert.certData['key'], self.outputHarnessCertPath + "\\SCS4\\" + keyName)
+          self.copyFile(self.SAS_harness_Cert.certData['key'], self.outputHarnessCertPath + "\\SCS5\\" + keyName)
+
+     def copyUUTcertificate(self):
+          self.setToRawCertPath()
+
+          self.copyChainFile(self.outputUUTCertPath + '\\uutCertificate.pem', self.UUT_Cert.certData['cert'], self.UUT_CA.certData['cert'])
+          self.copyChainFile(self.outputUUTCertPath + '\\CA_Bundle.pem', self.SAS_CA.certData['cert'], self.Root_CA.certData['cert'])
+          self.copyFile(self.Root_CA.certData['cert'], self.outputUUTCertPath + '\\root.pem')
+          self.copyFile(self.UUT_CA.certData['cert'], self.outputUUTCertPath + '\\uutCA.pem')
+          self.copyFile(self.certNameConfig['CRL']['servercrl'], self.outputUUTCertPath + '\\servercrl.crl')
 
 
      def getCertificateAuthority(self, name, parentCA):
@@ -333,6 +363,24 @@ class certGeneratorModel(certStructure):
           config.update(revokedCertConfig)
           config.update(self.certNameConfig["CRL"])
           return config
+
+     def copyFile(self, sourceFile, targetFile):
+          subprocess.call('COPY '+ sourceFile + ' ' + targetFile, shell = True)
+          
+
+     def copyChainFile(self, filename, cert1, cert2):
+          file_data = ""
+          with open(cert1 , "r") as f:
+               for line in f:
+                    file_data += line
+
+          with open(cert2, "r") as f:
+               for line in f:
+                    file_data += line
+          
+          with open(filename, "w+") as f:
+               for line in file_data:
+                    f.writelines(line)
 
 class certGeneratorInterface(object):
 

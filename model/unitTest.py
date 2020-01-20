@@ -225,7 +225,7 @@ class Test_certGeneratorModel(unittest.TestCase):
      def setUp(self):
           self.rootPath = str(os.path.dirname(os.path.dirname(__file__)))
      
-     def test_init(self):
+     def Atest_init(self):
           
           # Arrange 
           spec = {"fccid": "123", "sn": "321", "outputDirName": "qwert"}
@@ -239,7 +239,7 @@ class Test_certGeneratorModel(unittest.TestCase):
           # Assert
           self.assertEqual(result, expect)
 
-     def test_makeDir_1(self):
+     def Atest_makeDir_1(self):
           
           # Arrange 
           testclass = certGeneratorModel()
@@ -252,7 +252,7 @@ class Test_certGeneratorModel(unittest.TestCase):
           # Assert
           self.assertEqual(result, expect)
      
-     def test_makeDir_2(self):
+     def Atest_makeDir_2(self):
           
           # Arrange 
           spec = {"fccid": "123", "sn": "321", "outputDirName": "qwert"}
@@ -266,7 +266,7 @@ class Test_certGeneratorModel(unittest.TestCase):
           # Assert
           self.assertEqual(result, expect)
 
-     def test_setConfig(self):
+     def Atest_setConfig(self):
           
           # Arrange 
           testclass = certGeneratorModel()
@@ -304,6 +304,8 @@ class Test_certGeneratorModel(unittest.TestCase):
           testclass.setCertificateAuthority()
           testclass.setCertificate()
           testclass.setUUTCertificate()
+          testclass.copySAScertificate()
+          testclass.copyUUTcertificate()
           
           # Act
           result = os.path.isfile(testclass.configFile)

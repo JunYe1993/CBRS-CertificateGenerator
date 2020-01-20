@@ -34,7 +34,3 @@ while certShell.isConfigExist():
                certShell.certGenerate()
                userState = backToMenu
                break
-
-
-
-
