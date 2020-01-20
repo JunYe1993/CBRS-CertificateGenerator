@@ -452,4 +452,6 @@ class certGeneratorInterface(object):
           generator.setCertificateAuthority()
           generator.setCertificate()
           generator.setUUTCertificate()
+          generator.copySAScertificate()
+          generator.copyUUTcertificate()
 
