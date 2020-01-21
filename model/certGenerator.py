@@ -186,9 +186,9 @@ class certGeneratorModel(certStructure):
           if self.certData['outputDirName'] == '' : self.certData['outputDirName'] = 'certificates'
           if self.certData['customerType'] == ''  : self.certData['customerType'] = 'CBSD'
           self.rootPath = str(os.path.dirname(os.path.dirname(__file__))) + '\\' + self.certData['outputDirName']
-          self.rawCertPath = self.rootPath + '\\OriginalCerts'
-          self.outputUUTCertPath = self.rootPath + '\\ManagedCerts\\UUT'
-          self.outputHarnessCertPath = self.rootPath + '\\ManagedCerts\\SAS-Test-Harness'
+          self.rawCertPath = os.path.abspath(self.rootPath + '\\OriginalCerts')
+          self.outputUUTCertPath = os.path.abspath(self.rootPath + '\\ManagedCerts\\UUT')
+          self.outputHarnessCertPath = os.path.abspath(self.rootPath + '\\ManagedCerts\\SAS-Test-Harness')
           self.makeDir()
           self.setConfig()
 
@@ -276,12 +276,13 @@ class certGeneratorModel(certStructure):
 
      def copyUUTcertificate(self):
           self.setToRawCertPath()
-
-          self.copyChainFile(self.outputUUTCertPath + '\\uutCertificate.pem', self.UUT_Cert.certData['cert'], self.UUT_CA.certData['cert'])
+          self.copyChainFile(self.outputUUTCertPath + '\\uutCert.pem', self.UUT_Cert.certData['cert'], self.UUT_CA.certData['cert'])
           self.copyChainFile(self.outputUUTCertPath + '\\CA_Bundle.pem', self.SAS_CA.certData['cert'], self.Root_CA.certData['cert'])
+          self.copyFile(self.UUT_CA.certData['cert'], self.outputUUTCertPath + '\\cbsdMfrCA.pem')
           self.copyFile(self.Root_CA.certData['cert'], self.outputUUTCertPath + '\\root.pem')
-          self.copyFile(self.UUT_CA.certData['cert'], self.outputUUTCertPath + '\\uutCA.pem')
           self.copyFile(self.certNameConfig['CRL']['servercrl'], self.outputUUTCertPath + '\\servercrl.crl')
+
+          if self.UUT_Cert.certData['customerFile'] == '' : self.copyFile(self.UUT_Cert.certData['key'], self.outputUUTCertPath + '\\uutKey.key')
 
 
      def getCertificateAuthority(self, name, parentCA):
@@ -321,6 +322,7 @@ class certGeneratorModel(certStructure):
 
      def generateCertificate(self, Cert = certificateAuthorityStructure()):
           if Cert.certData['theTypeOfUUT'] == True:
+               
                CustomerFile = self.certData['customerFile']
                noCustomerFile = ''
                isFileKey = re.search(r'.key$', CustomerFile, 0)
@@ -365,7 +367,9 @@ class certGeneratorModel(certStructure):
           return config
 
      def copyFile(self, sourceFile, targetFile):
-          subprocess.call('COPY '+ sourceFile + ' ' + targetFile, shell = True)
+          cmd = 'copy' + ' ' + sourceFile + ' ' + targetFile
+          print("Copy Command :", cmd)
+          subprocess.call(cmd, shell = True)
           
 
      def copyChainFile(self, filename, cert1, cert2):

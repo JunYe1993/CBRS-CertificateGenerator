@@ -298,14 +298,15 @@ class Test_certGeneratorModel(unittest.TestCase):
      def test_setSASCA(self):
 
           # Arrange 
-          testclass = certGeneratorModel({'customerFile': self.rootPath + '/customerfile/cbsduutcsr.csr'})
+          # testclass = certGeneratorModel({'customerFile': self.rootPath + '/customerfile/cbsduutcsr.csr'})
+          testclass = certGeneratorModel({'fccId': 'fcc_id_test', 'sn': '70300183'})
           testclass.setConfig()
           testclass.setRootCA()
           testclass.setCertificateAuthority()
           testclass.setCertificate()
-          testclass.setUUTCertificate()
+          # testclass.setUUTCertificate()
           testclass.copySAScertificate()
-          testclass.copyUUTcertificate()
+          # testclass.copyUUTcertificate()
           
           # Act
           result = os.path.isfile(testclass.configFile)
