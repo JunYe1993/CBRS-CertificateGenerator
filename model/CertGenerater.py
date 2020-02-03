@@ -198,18 +198,28 @@ class Generater(object):
                f.write(file_data)
 
      def createCertChain(self, filename, cert1, cert2):
+          WINDOWS_LINE_ENDING = b'\r\n'
+          UNIX_LINE_ENDING = b'\n'
           file_data = ""
+          content1 = ""
+          content2 = ""
           with open(cert1 , "r") as f:
-               for line in f:
-                    file_data += line
+               content1 = f.read()
+               # for line in f:
+               #      file_data += line
 
           with open(cert2, "r") as f:
-               for line in f:
-                    file_data += line
+               content2 = f.read()
+               #for line in f:
+               #     file_data += line
           
           with open(filename, "w+") as f:
-               for line in file_data:
-                    f.writelines(line)
+               content = content1 + content2
+               content = content.replace(WINDOWS_LINE_ENDING, UNIX_LINE_ENDING)
+               f.write(content)
+               #for line in file_data:
+               #     line.replace(WINDOWS_LINE_ENDING, UNIX_LINE_ENDING)
+               #     f.writelines(line)
 
      def createCRLprefile(self, path):
           file = open(path + "/index.txt", "w")

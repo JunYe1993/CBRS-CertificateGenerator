@@ -368,23 +368,27 @@ class certGeneratorModel(certStructure):
 
      def copyFile(self, sourceFile, targetFile):
           cmd = 'copy' + ' ' + sourceFile + ' ' + targetFile
-          print("Copy Command :", cmd)
+          # print("Copy Command :", cmd)
           subprocess.call(cmd, shell = True)
           
 
      def copyChainFile(self, filename, cert1, cert2):
-          file_data = ""
-          with open(cert1 , "r") as f:
-               for line in f:
-                    file_data += line
+          WINDOWS_LINE_ENDING = b'\r\n'
+          UNIX_LINE_ENDING = b'\n'
+          content1 = ""
+          content2 = ""
 
-          with open(cert2, "r") as f:
-               for line in f:
-                    file_data += line
+          with open(cert1 , "rb") as f:
+               content1 = f.read()
+
+          with open(cert2, "rb") as f:
+               content2 = f.read()
           
-          with open(filename, "w+") as f:
-               for line in file_data:
-                    f.writelines(line)
+          with open(filename, "wb+") as f:
+               content = content1 + content2
+               content = content.replace(WINDOWS_LINE_ENDING, UNIX_LINE_ENDING)
+               f.write(content)
+               
 
 class certGeneratorInterface(object):
 
