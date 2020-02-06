@@ -273,6 +273,7 @@ class certGeneratorModel(certStructure):
           self.copyFile(self.SAS_harness_expired_Cert.certData['key'], self.outputHarnessCertPath + "\\SCS3\\" + keyName)
           self.copyFile(self.SAS_harness_unknown_Cert.certData['key'], self.outputHarnessCertPath + "\\SCS4\\" + keyName)
           self.copyFile(self.SAS_harness_Cert.certData['key'], self.outputHarnessCertPath + "\\SCS5\\" + keyName)
+          self.copyChainFile(self.outputHarnessCertPath + "\\" + self.CPI_Cert.certData['cert'], self.CPI_Cert.certData['cert'], self.CPI_Cert.certData['key'])
 
      def copyUUTcertificate(self):
           self.setToRawCertPath()
@@ -281,6 +282,7 @@ class certGeneratorModel(certStructure):
           self.copyFile(self.UUT_CA.certData['cert'], self.outputUUTCertPath + '\\cbsdMfrCA.pem')
           self.copyFile(self.Root_CA.certData['cert'], self.outputUUTCertPath + '\\root.pem')
           self.copyFile(self.certNameConfig['CRL']['servercrl'], self.outputUUTCertPath + '\\servercrl.crl')
+          self.copyFile(self.CPI_Cert.certData['key'], self.outputUUTCertPath + '\\cpi.key')
 
           if self.UUT_Cert.certData['customerFile'] == '' : self.copyFile(self.UUT_Cert.certData['key'], self.outputUUTCertPath + '\\uutKey.key')
 
@@ -371,7 +373,6 @@ class certGeneratorModel(certStructure):
           # print("Copy Command :", cmd)
           subprocess.call(cmd, shell = True)
           
-
      def copyChainFile(self, filename, cert1, cert2):
           WINDOWS_LINE_ENDING = b'\r\n'
           UNIX_LINE_ENDING = b'\n'
