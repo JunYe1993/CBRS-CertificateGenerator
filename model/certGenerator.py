@@ -441,10 +441,16 @@ class certGeneratorInterface(object):
           return self.userTypeIn()
 
      def customerCommonNameQuestion(self):
-          print(u'請輸入 UUT FCC ID')
-          self.fccId = self.userTypeIn()
-          print(u'請輸入 UUT Serial Number')
-          self.sn = self.userTypeIn()
+          if self.uutType == 'CBSD':
+               print(u'請輸入 UUT FCC ID')
+               self.fccId = self.userTypeIn()
+               print(u'請輸入 UUT Serial Number')
+               self.sn = self.userTypeIn()
+          else :
+               print(u'請輸入 FCC Registration Number')
+               self.fccId = self.userTypeIn()
+               print(u'請輸入 unique identifier')
+               self.sn = self.userTypeIn()
 
      def certificateFolderName(self):
           print(u'請輸入 Certificate 資料夾名稱(預設certificates)')
