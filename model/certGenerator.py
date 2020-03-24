@@ -250,7 +250,7 @@ class certGeneratorModel(certStructure):
           
      def revokeCerticate(self, revokeCert = certificateAuthorityStructure(), revokeCA = certificateAuthorityStructure()):
           self.setCRLprefile(str(self.rawCertPath) + '\\etc\\pki\\CA')
-          config = self.getCRLConfig({'revokeCert': revokeCA.certData['cert']}) 
+          config = self.getCRLConfig({'revokeCert': revokeCert.certData['cert']}) 
           revokeCA.initCRL(config)
           revokeCA.revokeCertificate(config)
 
