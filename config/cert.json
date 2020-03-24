@@ -63,21 +63,21 @@
           "countryName"            : "US",
           "organizationName"       : "Airspan Networks",
           "organizationUnitName"   : "WInnForum SAS Provider Certificate",
-          "commonName"             : "mocksas.testlab.winnf.github.com"
+          "commonName"             : "192.168.1.3"
      },
      "Harness_Certificate": {
           "key"               : "harnesskey.key",
           "csr"               : "harnesscsr.csr",
           "cert"              : "harnesscert.pem",
           "organizationName"  : "Test Lab for FCC PART 96",
-          "commonName"        : "mocksas.testlab.winnf.github.com",
+          "commonName"        : "192.168.1.3",
           "extensions"        : "sas_cert"
      },
      "Harness_Unknown_Certificate": {
           "key"          : "harnessunknownkey.key",
           "csr"          : "harnessunknowncsr.csr",
           "cert"         : "harnessunknowncert.pem",
-          "commonName"   : "sasunknownca.testlab.winnf.github.com",
+          "commonName"   : "192.168.1.3",
           "extensions"   : "sas_cert"
      },
      "Harness_Expired_Certificate": {
@@ -85,14 +85,14 @@
           "csr"          : "harnessexpirecsr.csr",
           "cert"         : "harnessexpirecert.pem",
           "validity"     : "1",
-          "commonName"   : "expiredsascert.testlab.winnf.github.com",
+          "commonName"   : "192.168.1.3",
           "extensions"   : "sas_cert"
      },
      "Harness_Revoked_Certificate": {
           "key"          : "harnessrevokekey.key",
           "csr"          : "harnessrevokecsr.csr",
           "cert"         : "harnessrevokecert.pem",
-          "commonName"   : "sascertwithcrl.testlab.winnf.github.com",
+          "commonName"   : "192.168.1.3",
           "extensions"   : "sas_cert_with_crl"
      },
      "Harness_Corrupted_Certificate": {
