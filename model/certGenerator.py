@@ -239,7 +239,7 @@ class certGeneratorModel(certStructure):
           self.setToRawCertPath()
           self.SAS_harness_Cert = self.getCertificate("Harness", "SAS")
           self.SAS_harness_expired_Cert = self.getCertificate("Harness_Expired", "SAS")
-          self.SAS_harness_unknown_Cert = self.getCertificate("Harness_Unknown", "SAS")
+          self.SAS_harness_unknown_Cert = self.getCertificate("Harness_Unknown", "SAS_Unknown")
           self.SAS_harness_revoked_Cert = self.getCertificate("Harness_Revoked", "SAS")
           self.revokeCerticate(self.SAS_harness_revoked_Cert, self.SAS_CA)
           self.CPI_Cert = self.getCertificate("CPI", "CPI")
