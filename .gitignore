@@ -3,3 +3,4 @@
 
 # ignore pyc file
 /model/*.pyc
+/model/__pycache__
