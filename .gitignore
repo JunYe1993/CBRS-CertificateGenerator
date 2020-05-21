@@ -1,2 +1,5 @@
+# ignore cert
 /certificates
-.gitignore
+
+# ignore pyc file
+/model/*.pyc
